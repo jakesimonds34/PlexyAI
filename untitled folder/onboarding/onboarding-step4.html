@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding Step 4 - PlexyAi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Inter:wght@500&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: "Aeonik-Medium";
+            src: url("https://anima-uploads.s3.amazonaws.com/5c7047e8842a8f000c9e2f06/Aeonik-Medium.ttf") format("truetype");
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        :root {
+            --green-primary: #5ad567;
+            --green-light: #e2f6e4;
+            --green-button: #ecffed;
+            --green-text: #c1e1c4;
+            --text-dark: #031504;
+            --text-medium: #3d483e;
+            --text-placeholder: #5b6b5d;
+            --border-color: #d6ded7;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter Tight', Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, rgba(175, 237, 181, 0.3) 0%, rgba(90, 213, 103, 0.1) 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Background pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(90, 213, 103, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(44, 126, 53, 0.1) 0%, transparent 50%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Background image */
+        .background-image {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 1440px;
+            height: 839px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .background-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 1440px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 32px 40px;
+            background: transparent;
+            z-index: 10;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .logo-text {
+            font-family: 'Aeonik-Medium', 'Inter Tight', Helvetica, sans-serif;
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--text-dark);
+            letter-spacing: 0;
+            line-height: 31.2px;
+        }
+
+        /* Main container */
+        .main-container {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 120px 20px 100px;
+            z-index: 1;
+        }
+
+        /* Onboarding card */
+        .onboarding-card {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        /* Progress section */
+        .progress-section {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 20px 32px;
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0px 4px 50px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            width: 100%;
+        }
+
+        .progress-title {
+            font-family: 'Inter', Helvetica, sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-dark);
+            letter-spacing: 0.15px;
+            line-height: 24px;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            height: 6px;
+        }
+
+        .progress-bar-filled {
+            width: 250px;
+            height: 6px;
+            background: var(--green-primary);
+            border-radius: 100px 0 0 100px;
+        }
+
+        .progress-bar-empty {
+            flex: 1;
+            height: 6px;
+            background: var(--green-light);
+            border-radius: 0 100px 100px 0;
+        }
+
+        /* Form section */
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            padding: 32px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0px 4px 50px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-content {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .form-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-dark);
+            letter-spacing: 0;
+            line-height: 26px;
+        }
+
+        /* Study habits options */
+        .habits-options {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .habit-option {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+        }
+
+        .habit-option button {
+            width: 100%;
+        }
+
+        .habit-button {
+            width: 100%;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-dark);
+            letter-spacing: 0.32px;
+            line-height: 24px;
+            position: relative;
+            z-index: 10;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        .habit-button:hover {
+            border-color: var(--green-primary);
+            background: #f8f9fa;
+        }
+
+        .habit-button.selected {
+            border-color: var(--green-primary);
+            background: var(--green-light);
+        }
+
+        .radio-button {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border-color);
+            position: relative;
+            flex-shrink: 0;
+            pointer-events: none;
+        }
+
+        .habit-button span {
+            pointer-events: none;
+            flex: 1;
+            text-align: left;
+            white-space: normal;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .habit-button.selected .radio-button {
+            border-color: var(--green-primary);
+            background: var(--green-primary);
+        }
+
+        .habit-button.selected .radio-button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--white);
+        }
+
+        /* Button section */
+        .button-section {
+            display: flex;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .back-button,
+        .continue-button {
+            flex: 1;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 100%),
+                        linear-gradient(0deg, var(--white) 0%, var(--white) 100%);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-dark);
+            letter-spacing: 0.32px;
+            line-height: 24px;
+        }
+
+        .back-button:hover {
+            background: #f8f9fa;
+            border-color: var(--green-primary);
+        }
+
+        .continue-button {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 100%),
+                        linear-gradient(0deg, var(--green-button) 0%, var(--green-button) 100%);
+            color: var(--green-text);
+        }
+
+        .continue-button:enabled {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 100%),
+                        linear-gradient(0deg, var(--green-primary) 0%, var(--green-primary) 100%);
+            color: var(--white);
+            box-shadow: 0px 1px 2px rgba(13, 13, 18, 0.06);
+        }
+
+        .continue-button:enabled:hover {
+            transform: translateY(-2px);
+            box-shadow: 0px 4px 12px rgba(90, 213, 103, 0.3);
+        }
+
+        .continue-button:enabled:active {
+            transform: translateY(0);
+        }
+
+        /* Footer */
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 1440px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 32px;
+            background: transparent;
+            z-index: 10;
+        }
+
+        .footer-text {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-medium);
+            letter-spacing: 0.28px;
+            line-height: 21px;
+        }
+
+        .footer-links {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .footer-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-medium);
+            letter-spacing: 0.28px;
+            line-height: 21px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: var(--green-primary);
+        }
+
+        .footer-link-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Page Transition Animations */
+        body {
+            animation: fadeIn 0.4s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .page-transition {
+            animation: fadeOut 0.3s ease-out forwards;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                padding: 20px;
+            }
+
+            .progress-section,
+            .form-section {
+                padding: 24px;
+            }
+
+            .button-section {
+                flex-direction: column;
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 16px;
+                padding: 20px;
+            }
+
+            .footer-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Image -->
+    <div class="background-image">
+        <img src="https://c.animaapp.com/cuhyWmdZ/img/background.svg" alt="Background">
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="logo-container">
+            <img src="https://c.animaapp.com/cuhyWmdZ/img/-group-@2x.png" alt="PlexyAi Logo" class="logo-icon">
+            <div class="logo-text">PlexyAi</div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <div class="onboarding-card">
+            <!-- Progress Section -->
+            <div class="progress-section">
+                <div class="progress-title">Set up your Account</div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-filled"></div>
+                    <div class="progress-bar-empty"></div>
+                </div>
+            </div>
+
+            <!-- Form Section -->
+            <div class="form-section">
+                <div class="form-content">
+                    <h1 class="form-title">How do you feel about your current study habits?</h1>
+
+                    <div class="habits-options">
+                        <div class="habit-option">
+                            <button type="button" class="habit-button" data-habit="I'm doing okay but could improve" onclick="selectHabit(this.getAttribute('data-habit'), this)">
+                                <span>I'm doing okay but could improve</span>
+                                <div class="radio-button"></div>
+                            </button>
+                        </div>
+
+                        <div class="habit-option">
+                            <button type="button" class="habit-button" data-habit="I need more structure" onclick="selectHabit(this.getAttribute('data-habit'), this)">
+                                <span>I need more structure</span>
+                                <div class="radio-button"></div>
+                            </button>
+                        </div>
+
+                        <div class="habit-option">
+                            <button type="button" class="habit-button" data-habit="I struggle a lot" onclick="selectHabit(this.getAttribute('data-habit'), this)">
+                                <span>I struggle a lot</span>
+                                <div class="radio-button"></div>
+                            </button>
+                        </div>
+
+                        <div class="habit-option">
+                            <button type="button" class="habit-button" data-habit="I don't really have habits yet" onclick="selectHabit(this.getAttribute('data-habit'), this)">
+                                <span>I don't really have habits yet</span>
+                                <div class="radio-button"></div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Button Section -->
+                <div class="button-section">
+                    <button type="button" class="back-button" onclick="handleBack()">Back</button>
+                    <button type="button" class="continue-button" id="continueButton" disabled onclick="handleContinue()">
+                        Continue
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p class="footer-text">© 2025 PlexyAI. All right reserved.</p>
+        <div class="footer-links">
+            <a href="#" class="footer-link" onclick="event.preventDefault(); alert('Privacy policy coming soon!');">
+                <svg class="footer-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-width="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke-width="2"/>
+                </svg>
+                Privacy
+            </a>
+            <a href="#" class="footer-link" onclick="event.preventDefault(); alert('Terms of service coming soon!');">
+                <svg class="footer-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke-width="2"/>
+                    <polyline points="14 2 14 8 20 8" stroke-width="2"/>
+                </svg>
+                Terms
+            </a>
+            <a href="#" class="footer-link" onclick="event.preventDefault(); alert('Help center coming soon!');">
+                <svg class="footer-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" stroke-width="2"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17" stroke-width="2"/>
+                </svg>
+                Get help
+            </a>
+        </div>
+    </footer>
+
+    <script>
+        let selectedHabit = null;
+        const continueButton = document.getElementById('continueButton');
+
+        // Select habit function
+        function selectHabit(habit, button) {
+            // Remove selected class from all buttons
+            document.querySelectorAll('.habit-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+
+            // Add selected class to clicked button
+            button.classList.add('selected');
+            selectedHabit = habit;
+
+            // Enable continue button
+            continueButton.disabled = false;
+        }
+
+        // Add event listeners to all habit buttons on page load as backup
+        window.addEventListener('DOMContentLoaded', function() {
+            const habitButtons = document.querySelectorAll('.habit-button');
+            habitButtons.forEach(button => {
+                // Add click event listener (works alongside onclick)
+                button.addEventListener('click', function(e) {
+                    // Only handle if onclick didn't fire (backup)
+                    const habit = this.getAttribute('data-habit');
+                    if (habit && !this.classList.contains('selected')) {
+                        selectHabit(habit, this);
+                    }
+                }, true); // Use capture phase to ensure it fires
+            });
+        });
+
+        // Page transition function
+        function transitionToPage(url) {
+            document.body.classList.add('page-transition');
+            setTimeout(function() {
+                window.location.href = url;
+            }, 300);
+        }
+
+        // Handle back button click
+        function handleBack() {
+            transitionToPage('onboarding-step3.html');
+        }
+
+        // Handle continue button click
+        function handleContinue() {
+            if (!selectedHabit) {
+                alert('Please select an option');
+                return;
+            }
+
+            // Store the study habit in sessionStorage
+            sessionStorage.setItem('onboardingStudyHabit', selectedHabit);
+
+            // Redirect to step 5
+            transitionToPage('onboarding-step5.html');
+        }
+    </script>
+</body>
+</html>
+
