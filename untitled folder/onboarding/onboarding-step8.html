@@ -574,8 +574,8 @@
         var supabaseClient;
         try {
             if (window.supabase) {
-                const supabaseUrl = 'https://zjtnptmbyaffsqrikrzi.supabase.co';
-                const supabaseKey = 'sb_publishable_3XarO12Z7F95Ued04wjCWA_6yqQEqe6';
+                const supabaseUrl = 'https://unjcdnmxqtgurihukkrj.supabase.co';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVuamNkbm14cXRndXJpaHVra3JqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5MzI1MTcsImV4cCI6MjA4MzUwODUxN30.raso3E2B4WSIb0y6_IiT1a7HHVUjW_f76_sBr1jokrA';
                 supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
             }
         } catch (error) {
@@ -730,30 +730,67 @@
             // Validate all required onboarding fields are present
             const name = sessionStorage.getItem('onboardingName');
             const email = sessionStorage.getItem('onboardingEmail');
-            
+
             if (!name || !email) {
                 showError('passwordError', 'Missing required information. Please go back and complete all steps.');
                 return;
             }
 
-            // Store password locally (will be used after Google connection)
-            // DO NOT create Supabase account yet - that happens after Google OAuth
-            sessionStorage.setItem('onboardingPassword', password);
-            
-            // All onboarding data is already stored in sessionStorage:
-            // - onboardingName
-            // - onboardingAge
-            // - onboardingGrade
-            // - onboardingEmail
-            // - onboardingPassword (just stored)
-            // - onboardingStudyHabit
-            // - onboardingFocusTime
-            // - onboardingMotivation
-            
-            // Account creation will happen AFTER Google connection in step 9
-            
-            // Redirect to Google integration step
-            transitionToPage('onboarding-step9.html');
+            // Check if Supabase is initialized
+            if (!supabaseClient) {
+                showError('passwordError', 'Unable to connect to server. Please refresh the page.');
+                return;
+            }
+
+            // Disable the continue button while signing up
+            const continueButtonEl = document.getElementById('continueButton');
+            if (continueButtonEl) {
+                continueButtonEl.disabled = true;
+                continueButtonEl.textContent = 'Creating account...';
+            }
+
+            try {
+                // Sign up the user with email and password
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            full_name: name,
+                            age: sessionStorage.getItem('onboardingAge'),
+                            grade: sessionStorage.getItem('onboardingGrade'),
+                            study_habit: sessionStorage.getItem('onboardingStudyHabit'),
+                            focus_time: sessionStorage.getItem('onboardingFocusTime'),
+                            motivation: sessionStorage.getItem('onboardingMotivation')
+                        }
+                    }
+                });
+
+                if (error) {
+                    console.error('Signup error:', error.message);
+                    showError('passwordError', error.message);
+                    if (continueButtonEl) {
+                        continueButtonEl.disabled = false;
+                        continueButtonEl.textContent = 'Continue';
+                    }
+                    return;
+                }
+
+                console.log('User signed up successfully:', data.user?.id);
+
+                // Store that signup was successful
+                sessionStorage.setItem('signupComplete', 'true');
+
+                // Redirect to Google integration step
+                transitionToPage('onboarding-step9.html');
+            } catch (err) {
+                console.error('Unexpected error during signup:', err);
+                showError('passwordError', 'An unexpected error occurred. Please try again.');
+                if (continueButtonEl) {
+                    continueButtonEl.disabled = false;
+                    continueButtonEl.textContent = 'Continue';
+                }
+            }
         }
 
         // Wait for DOM to be ready and set up event listeners

@@ -10,7 +10,7 @@ In your Supabase Dashboard:
 - Go to **Authentication** → **Providers**
 - **Google** provider is enabled
 - **Client ID** and **Client Secret** are configured
-- **Callback URL** matches: `https://zjtnptmbyaffsqrikrzi.supabase.co/auth/v1/callback`
+- **Callback URL** matches: `https://unjcdnmxqtgurihukkrj.supabase.co/auth/v1/callback`
 
 **No action needed** - this is already correct.
 

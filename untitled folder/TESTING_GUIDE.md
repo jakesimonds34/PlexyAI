@@ -26,7 +26,7 @@ Follow these steps **in order** to verify your Google OAuth integration is worki
 - Check Supabase Dashboard → Authentication → Providers
 - Ensure Google provider is enabled
 - Verify Client ID and Client Secret are correct
-- Check callback URL matches: `https://zjtnptmbyaffsqrikrzi.supabase.co/auth/v1/callback`
+- Check callback URL matches: `https://unjcdnmxqtgurihukkrj.supabase.co/auth/v1/callback`
 
 ---
 
@@ -38,8 +38,8 @@ Open **Browser DevTools → Console** (F12) and run:
 
 ```javascript
 // Get Supabase client (already initialized in your app)
-const supabaseUrl = 'https://zjtnptmbyaffsqrikrzi.supabase.co';
-const supabaseKey = 'sb_publishable_3XarO12Z7F95Ued04wjCWA_6yqQEqe6';
+const supabaseUrl = 'https://unjcdnmxqtgurihukkrj.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVuamNkbm14cXRndXJpaHVra3JqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5MzI1MTcsImV4cCI6MjA4MzUwODUxN30.raso3E2B4WSIb0y6_IiT1a7HHVUjW_f76_sBr1jokrA';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // Get session and check for tokens

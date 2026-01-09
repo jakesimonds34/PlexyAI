@@ -15,7 +15,7 @@ Your application is now configured to use Supabase for user authentication and d
 ### 1. Create the Users Table
 Run the SQL script in `supabase_setup.sql` in your Supabase SQL Editor:
 
-1. Go to your Supabase project: https://zjtnptmbyaffsqrikrzi.supabase.co
+1. Go to your Supabase project: https://unjcdnmxqtgurihukkrj.supabase.co
 2. Navigate to SQL Editor
 3. Copy and paste the contents of `supabase_setup.sql`
 4. Run the script
@@ -34,8 +34,8 @@ This will create:
 
 ### 3. Verify API Keys
 The following credentials are already configured in the code:
-- **Project URL**: https://zjtnptmbyaffsqrikrzi.supabase.co
-- **Publishable Key**: sb_publishable_3XarO12Z7F95Ued04wjCWA_6yqQEqe6
+- **Project URL**: https://unjcdnmxqtgurihukkrj.supabase.co
+- **Publishable Key**: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVuamNkbm14cXRndXJpaHVra3JqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5MzI1MTcsImV4cCI6MjA4MzUwODUxN30.raso3E2B4WSIb0y6_IiT1a7HHVUjW_f76_sBr1jokrA
 
 These are used in:
 - `onboarding/onboarding-step8.html` - User registration
