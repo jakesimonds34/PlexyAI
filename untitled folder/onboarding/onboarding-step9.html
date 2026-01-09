@@ -413,6 +413,18 @@
                 justify-content: center;
             }
         }
+
+        /* Error Message */
+        .error-message {
+            color: #df1c41;
+            font-size: 14px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+            margin-top: 8px;
+        }
     </style>
 </head>
 <body>
@@ -450,6 +462,8 @@
                         <img src="https://c.animaapp.com/jemPXhja/img/social-icons-1.svg" alt="Google" class="social-icon">
                         <span>Connect your Google Account</span>
                     </button>
+
+                    <div class="error-message" id="googleError"></div>
                 </div>
 
                 <!-- Button Section -->
@@ -504,6 +518,23 @@
             console.error('Supabase initialization error:', error);
         }
 
+        // Show error message
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.classList.add('show');
+            }
+        }
+
+        // Hide error message
+        function hideError(elementId) {
+            const errorElement = document.getElementById(elementId);
+            if (errorElement) {
+                errorElement.classList.remove('show');
+            }
+        }
+
         // Wait for DOM to be ready
         let googleConnected = false;
         let googleButton, continueButton;
@@ -515,6 +546,25 @@
             // Google connection is REQUIRED - disable continue button until connected
             if (continueButton) {
                 continueButton.disabled = true; // Disable by default - Google is required
+            }
+
+            // Check for OAuth errors in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const errorCode = urlParams.get('error_code');
+            const errorDescription = urlParams.get('error_description');
+
+            if (errorCode) {
+                console.error('OAuth error:', errorCode, errorDescription);
+
+                if (errorCode === 'identity_already_exists') {
+                    showError('googleError', 'This Google account is already linked to another user. Please use a different Google account.');
+                } else {
+                    showError('googleError', 'Failed to connect Google: ' + (errorDescription || errorCode));
+                }
+
+                // Clean up URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                sessionStorage.removeItem('googleConnectionAttempt');
             }
             
             // Check if user is returning from Google OAuth redirect
