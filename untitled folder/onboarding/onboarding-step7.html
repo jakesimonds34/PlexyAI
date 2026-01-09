@@ -604,79 +604,11 @@
         }
         
         // Check if email already exists in Supabase
-        // IMPORTANT: This is ONLY called when user clicks Continue, NOT on every keystroke
+        // Note: We don't check here anymore - step 8 will handle duplicate email errors
         async function checkEmailExists(email) {
-            if (!supabaseClient) {
-                // If Supabase not initialized yet, try again
-                if (window.supabase) {
-                    initSupabase();
-                    // Wait a bit for initialization
-                    await new Promise(resolve => setTimeout(resolve, 200));
-                    if (!supabaseClient) {
-                        console.log('Supabase not initialized, allowing email');
-                        return false; // Still not initialized, allow to continue
-                    }
-                } else {
-                    console.log('Supabase library not loaded, allowing email');
-                    return false; // Can't check, allow to continue
-                }
-            }
-            
-            if (!email || !validateEmail(email)) {
-                return false; // Invalid email format, don't check
-            }
-            
-            try {
-                // Try to sign up - this is the most reliable way to check if email exists
-                // Supabase will return an error if the email is already registered
-                const { data, error } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: 'TempCheck123!@#$', // Temporary password for checking
-                    options: {
-                        emailRedirectTo: window.location.origin,
-                        data: {
-                            temp_check: true // Mark this as a check, not real signup
-                        }
-                    }
-                });
-                
-                if (error) {
-                    const errorMsg = error.message.toLowerCase();
-                    
-                    // Check for "already registered" errors
-                    if (errorMsg.includes('already registered') || 
-                        errorMsg.includes('user already registered') ||
-                        errorMsg.includes('already exists') ||
-                        errorMsg.includes('email address is already registered') ||
-                        errorMsg.includes('user with this email already exists')) {
-                        console.log('Email already exists:', email);
-                        return true; // Email already exists
-                    }
-                    
-                    // Rate limit or other errors - don't block user
-                    if (errorMsg.includes('rate limit') || 
-                        errorMsg.includes('too many requests') ||
-                        errorMsg.includes('429')) {
-                        console.log('Rate limit reached - allowing email to continue');
-                        return false; // Don't block on rate limit
-                    }
-                    
-                    // Other errors (network issues, etc.)
-                    console.log('Signup check error (non-existence):', error.message);
-                    return false; // Don't block user on other errors
-                }
-                
-                // If signup succeeded, email doesn't exist
-                // Note: This creates an unconfirmed user in auth.users
-                // The actual signup in step 8 will use the same email and handle it properly
-                console.log('Email does not exist (signup succeeded):', email);
-                return false;
-            } catch (error) {
-                console.error('Error checking email:', error);
-                // On error (including rate limits), allow to continue
-                // The actual signup in step 8 will catch duplicate emails
-                return false; // Don't block user on errors
-            }
+            // Skip email existence check - let step 8 handle it during actual signup
+            // This prevents creating duplicate/phantom users
+            return false;
         }
 
         // Show error message
