@@ -768,7 +768,17 @@
 
                 if (error) {
                     console.error('Signup error:', error.message);
-                    showError('passwordError', error.message);
+                    const errorMsg = error.message.toLowerCase();
+
+                    // Check if user already exists
+                    if (errorMsg.includes('already registered') ||
+                        errorMsg.includes('already exists') ||
+                        errorMsg.includes('user already registered')) {
+                        showError('passwordError', 'This email is already registered. Please go to login page.');
+                    } else {
+                        showError('passwordError', error.message);
+                    }
+
                     if (continueButtonEl) {
                         continueButtonEl.disabled = false;
                         continueButtonEl.textContent = 'Continue';
