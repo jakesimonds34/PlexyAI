@@ -658,18 +658,22 @@
                 // Mark that we're attempting to connect Google
                 sessionStorage.setItem('googleConnectionAttempt', 'true');
                 
-                // Sign in with Google OAuth (for API access only, not primary auth)
-                const { data, error } = await supabaseClient.auth.signInWithOAuth({
+                // Link Google identity to existing account (for Classroom API access)
+                const { data, error } = await supabaseClient.auth.linkIdentity({
                     provider: 'google',
                     options: {
                         redirectTo: window.location.origin + '/onboarding/onboarding-step9.html',
-                        scopes: 'https://www.googleapis.com/auth/classroom.courses.readonly https://www.googleapis.com/auth/classroom.coursework.me.readonly https://www.googleapis.com/auth/drive.readonly'
+                        scopes: 'https://www.googleapis.com/auth/classroom.courses.readonly https://www.googleapis.com/auth/classroom.coursework.me.readonly https://www.googleapis.com/auth/drive.readonly',
+                        queryParams: {
+                            access_type: 'offline',
+                            prompt: 'consent'
+                        }
                     }
                 });
                 
                 if (error) {
-                    console.error('Google OAuth error:', error);
-                    alert('Failed to connect Google. Please try again.');
+                    console.error('Google link error:', error);
+                    alert('Failed to connect Google: ' + error.message);
                     if (googleButton) {
                         googleButton.style.opacity = '1';
                         googleButton.style.cursor = 'pointer';
@@ -679,7 +683,7 @@
                 }
                 
                 // Note: After OAuth redirect, the page will reload and check for Google connection
-                // The DOMContentLoaded handler will detect the Google session and update the button
+                // The DOMContentLoaded handler will detect the linked Google identity
             } catch (error) {
                 console.error('Error connecting Google:', error);
                 alert('An error occurred. Please try again.');
