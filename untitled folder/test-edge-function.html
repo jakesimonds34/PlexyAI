@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Edge Function</title>
+</head>
+<body>
+    <h1>Test Edge Function</h1>
+    <button onclick="testFunction()">Test Chat AI Function</button>
+    <pre id="result"></pre>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabaseUrl = 'https://zjtnptmbyaffsqrikrzi.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqdG5wdG1ieWFmZnNxcmlrcnppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3MzI1OTksImV4cCI6MjA4MzMwODU5OX0.W9ihNjtBJDPmXkxtDS0ZXiE6EVQvh3WgZDq8PYKi15c';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function testFunction() {
+            const resultEl = document.getElementById('result');
+            resultEl.textContent = 'Testing...';
+            
+            try {
+                // Get session
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                
+                if (!session) {
+                    resultEl.textContent = 'Error: Not logged in. Please log in first.';
+                    return;
+                }
+                
+                console.log('Session:', session);
+                console.log('Access token:', session.access_token);
+                console.log('Token length:', session.access_token?.length);
+                
+                // Call Edge Function
+                const response = await fetch(`${supabaseUrl}/functions/v1/chat-ai`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${session.access_token}`,
+                        'Content-Type': 'application/json',
+                        'apikey': supabaseKey,
+                    },
+                    body: JSON.stringify({
+                        message: 'Hello, test message'
+                    }),
+                });
+                
+                const data = await response.json();
+                
+                resultEl.textContent = JSON.stringify({
+                    status: response.status,
+                    statusText: response.statusText,
+                    data: data
+                }, null, 2);
+                
+                console.log('Response:', response);
+                console.log('Data:', data);
+                
+            } catch (error) {
+                resultEl.textContent = 'Error: ' + error.message;
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
+

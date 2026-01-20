@@ -1,0 +1,2061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlexyAI - Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Google Auth Utilities -->
+    <script src="google_auth_utils.js"></script>
+    <script>
+        // Check if remembered user session is still valid (not expired)
+        function isRememberedUserValid() {
+            const rememberedUserStr = localStorage.getItem('rememberedUser');
+            if (!rememberedUserStr) {
+                return false;
+            }
+            
+            try {
+                const rememberedUser = JSON.parse(rememberedUserStr);
+                
+                // Check if expiration date exists
+                if (!rememberedUser.expirationDate) {
+                    // Old format without expiration - treat as expired for security
+                    localStorage.removeItem('rememberedUser');
+                    return false;
+                }
+                
+                // Check if expiration date has passed
+                const expirationDate = new Date(rememberedUser.expirationDate);
+                const now = new Date();
+                
+                if (now > expirationDate) {
+                    // Session expired, remove it
+                    localStorage.removeItem('rememberedUser');
+                    return false;
+                }
+                
+                return true;
+            } catch (e) {
+                // Invalid data, remove it
+                localStorage.removeItem('rememberedUser');
+                return false;
+            }
+        }
+
+        // Get valid remembered user or restore session
+        function getValidRememberedUser() {
+            if (!isRememberedUserValid()) {
+                return null;
+            }
+            
+            const rememberedUserStr = localStorage.getItem('rememberedUser');
+            if (!rememberedUserStr) {
+                return null;
+            }
+            
+            try {
+                const rememberedUser = JSON.parse(rememberedUserStr);
+                // Remove expirationDate from session data (not needed in sessionStorage)
+                const sessionData = {
+                    id: rememberedUser.id, // Include user ID for Supabase queries
+                    email: rememberedUser.email,
+                    name: rememberedUser.name,
+                    loginTime: rememberedUser.loginTime
+                };
+                
+                // Restore to sessionStorage
+                sessionStorage.setItem('currentUser', JSON.stringify(sessionData));
+                
+                return sessionData;
+            } catch (e) {
+                localStorage.removeItem('rememberedUser');
+                return null;
+            }
+        }
+
+        // Initialize Supabase
+        const supabaseUrl = 'https://zjtnptmbyaffsqrikrzi.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqdG5wdG1ieWFmZnNxcmlrcnppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3MzI1OTksImV4cCI6MjA4MzMwODU5OX0.W9ihNjtBJDPmXkxtDS0ZXiE6EVQvh3WgZDq8PYKi15c';
+        let supabase;
+        
+        if (window.supabase) {
+            supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        }
+
+        // Logout function (clean - signs out and clears all session data)
+        async function logout() {
+            if (!supabase) {
+                console.error('Supabase not initialized');
+                return;
+            }
+            
+            try {
+                // Sign out from Supabase
+                const { error } = await supabase.auth.signOut();
+                
+                if (error) {
+                    console.error('Logout error:', error);
+                    alert('Error logging out: ' + error.message);
+                    return;
+                }
+                
+                // Clear all session data
+                sessionStorage.clear();
+                localStorage.removeItem('rememberedUser');
+                
+                // Clear Google tokens
+                sessionStorage.removeItem('googleAccessToken');
+                sessionStorage.removeItem('googleRefreshToken');
+                
+                console.log('Logged out successfully');
+                
+                // Redirect to login page
+                window.location.href = 'login.html?showLogin=true';
+            } catch (error) {
+                console.error('Logout exception:', error);
+                // Even if there's an error, clear local data and redirect
+                sessionStorage.clear();
+                localStorage.removeItem('rememberedUser');
+                window.location.href = 'login.html?showLogin=true';
+            }
+        }
+        
+        // Make logout globally accessible
+        window.logout = logout;
+
+        // Load Classroom data from Supabase
+        async function loadClassroomData() {
+            if (!supabase) {
+                console.error('Supabase not initialized');
+                return;
+            }
+
+            try {
+                // Get current user
+                const currentUserStr = sessionStorage.getItem('currentUser');
+                if (!currentUserStr) {
+                    console.error('No user session found');
+                    return;
+                }
+
+                const currentUser = JSON.parse(currentUserStr);
+                const userId = currentUser.id;
+
+                // Get user profile
+                const { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', userId)
+                    .single();
+
+                if (!profileError && profile) {
+                    // Update user info in topbar
+                    const userNameEl = document.querySelector('.user-name');
+                    const userGradeEl = document.querySelector('.user-grade');
+                    
+                    if (userNameEl && profile.full_name) {
+                        userNameEl.textContent = profile.full_name;
+                    }
+                    if (userGradeEl && profile.grade) {
+                        userGradeEl.textContent = `Grade ${profile.grade}`;
+                    }
+                }
+
+                // Get classes
+                const { data: classes, error: classesError } = await supabase
+                    .from('classes')
+                    .select('*')
+                    .eq('owner_id', userId)
+                    .order('name', { ascending: true });
+
+                if (classesError) {
+                    console.error('Error loading classes:', classesError);
+                    return;
+                }
+
+                // Get assignments with class info
+                const { data: assignments, error: assignmentsError } = await supabase
+                    .from('assignments')
+                    .select(`
+                        *,
+                        classes:class_id (
+                            name,
+                            google_class_id
+                        )
+                    `)
+                    .eq('owner_id', userId)
+                    .order('due_date', { ascending: true, nullsFirst: false });
+
+                if (assignmentsError) {
+                    console.error('Error loading assignments:', assignmentsError);
+                    return;
+                }
+
+                // Get submissions
+                const { data: submissions, error: submissionsError } = await supabase
+                    .from('submissions')
+                    .select(`
+                        *,
+                        assignments:assignment_id (
+                            title,
+                            due_date,
+                            max_points
+                        )
+                    `)
+                    .eq('owner_id', userId);
+
+                if (submissionsError) {
+                    console.error('Error loading submissions:', submissionsError);
+                }
+
+                // Display data in dashboard
+                displayAssignments(assignments || []);
+                displayUpcomingTests(assignments || []);
+
+                console.log('Classroom data loaded:', {
+                    classes: classes?.length || 0,
+                    assignments: assignments?.length || 0,
+                    submissions: submissions?.length || 0
+                });
+
+            } catch (error) {
+                console.error('Error loading Classroom data:', error);
+            }
+        }
+
+        // Display assignments in "Due Soon" section
+        function displayAssignments(assignments) {
+            if (!assignments || assignments.length === 0) {
+                return;
+            }
+
+            // Filter assignments with due dates
+            const upcomingAssignments = assignments
+                .filter(a => a.due_date && a.state === 'PUBLISHED')
+                .slice(0, 5); // Show top 5
+
+            // Find the "Due Soon" section
+            const dueSoonCard = document.querySelector('.due-soon-card');
+            if (!dueSoonCard) {
+                return;
+            }
+
+            // Update badge count
+            const badge = dueSoonCard.querySelector('.due-soon-badge');
+            if (badge) {
+                badge.textContent = `${upcomingAssignments.length} ${upcomingAssignments.length === 1 ? 'ITEM' : 'ITEMS'}`;
+            }
+
+            // Find the container (div after header)
+            const dueSoonContainer = dueSoonCard.querySelector('.due-soon-header')?.nextElementSibling;
+            if (!dueSoonContainer) {
+                return;
+            }
+
+            // Clear existing content
+            dueSoonContainer.innerHTML = '';
+
+            // Add assignments
+            upcomingAssignments.forEach((assignment, index) => {
+                const dueDate = new Date(assignment.due_date);
+                const now = new Date();
+                const daysUntilDue = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+                
+                const isUrgent = daysUntilDue <= 1;
+
+                const assignmentEl = document.createElement('div');
+                assignmentEl.className = 'due-soon-item';
+                assignmentEl.innerHTML = `
+                    <div class="due-soon-item-info">
+                        <div class="due-soon-item-title">${assignment.title || 'Untitled Assignment'}</div>
+                        <div class="due-soon-item-subject">
+                            <img src="https://c.animaapp.com/EEnRA4DR/img/icon-13.svg" alt="Subject" class="due-soon-item-icon">
+                            ${assignment.classes?.name || 'Unknown Class'}
+                        </div>
+                    </div>
+                    <button class="btn-do-now">Do now</button>
+                `;
+
+                dueSoonContainer.appendChild(assignmentEl);
+            });
+        }
+
+        // Display upcoming tests
+        function displayUpcomingTests(assignments) {
+            if (!assignments || assignments.length === 0) {
+                return;
+            }
+
+            // Filter assignments with due dates (treat as tests)
+            const upcomingTests = assignments
+                .filter(a => a.due_date && a.state === 'PUBLISHED')
+                .slice(0, 3); // Show top 3
+
+            // Find the "Upcoming Tests" container
+            const testsContainer = document.querySelector('.upcoming-tests');
+            if (!testsContainer) {
+                return;
+            }
+
+            const testsList = testsContainer.querySelector('.upcoming-tests-header')?.nextElementSibling;
+            if (!testsList) {
+                return;
+            }
+
+            // Clear existing content
+            testsList.innerHTML = '';
+
+            // Add tests
+            upcomingTests.forEach((assignment, index) => {
+                const dueDate = new Date(assignment.due_date);
+                const isUrgent = (dueDate - new Date()) / (1000 * 60 * 60 * 24) <= 2;
+
+                const testEl = document.createElement('div');
+                testEl.className = 'test-item';
+                testEl.innerHTML = `
+                    <div class="test-date-card ${isUrgent ? 'urgent' : 'normal'}">
+                        <div class="test-date-month ${isUrgent ? 'urgent' : 'normal'}">${dueDate.toLocaleDateString('en-US', { month: 'SHORT' }).toUpperCase()}</div>
+                        <div class="test-date-day ${isUrgent ? 'urgent' : 'normal'}">${dueDate.getDate()}</div>
+                    </div>
+                    <div class="test-info">
+                        <div class="test-title">${assignment.title || 'Untitled Test'}</div>
+                        <div class="test-subject">
+                            <div class="test-subject-dot" style="background: ${getSubjectColor(assignment.classes?.name || '')};"></div>
+                            <div class="test-subject-name">${assignment.classes?.name || 'Unknown Class'}</div>
+                        </div>
+                    </div>
+                    ${isUrgent ? '<div class="test-indicator" style="background: #fb2c36;"></div>' : ''}
+                `;
+
+                testsList.appendChild(testEl);
+
+                // Add separator if not last item
+                if (index < upcomingTests.length - 1) {
+                    const separator = document.createElement('div');
+                    separator.style.cssText = 'width: 100%; height: 1px; background: var(--border-color); margin: 0;';
+                    testsList.appendChild(separator);
+                }
+            });
+        }
+
+        // Helper function to format due date
+        function formatDueDate(date) {
+            const now = new Date();
+            const diffTime = date - now;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays < 0) {
+                return 'Overdue';
+            } else if (diffDays === 0) {
+                return 'Today';
+            } else if (diffDays === 1) {
+                return 'Tomorrow';
+            } else if (diffDays <= 7) {
+                return `In ${diffDays} days`;
+            } else {
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
+        }
+
+        // Helper function to get subject color
+        function getSubjectColor(className) {
+            const colors = ['#2b7fff', '#fe9a00', '#ad46ff', '#5ad567', '#fb2c36'];
+            const hash = className.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            return colors[hash % colors.length];
+        }
+
+        // Setup user profile dropdown
+        function setupUserDropdown() {
+            const userProfile = document.getElementById('userProfileDropdown');
+            const dropdownMenu = document.getElementById('userDropdownMenu');
+            
+            if (userProfile && dropdownMenu) {
+                userProfile.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    // Toggle dropdown
+                    if (dropdownMenu.style.display === 'none') {
+                        dropdownMenu.style.display = 'block';
+                    } else {
+                        dropdownMenu.style.display = 'none';
+                    }
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!userProfile.contains(e.target)) {
+                        dropdownMenu.style.display = 'none';
+                    }
+                });
+            }
+        }
+
+        // Check if user is logged in and load data
+        window.addEventListener('DOMContentLoaded', async function() {
+            // Setup user dropdown
+            setupUserDropdown();
+            
+            const currentUser = sessionStorage.getItem('currentUser');
+            
+            // Clean session check (REQUIRED for every protected page)
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (!session) {
+                // No session - redirect to login
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // Session exists - check if we have currentUser in sessionStorage
+            if (currentUser) {
+                // User has active session, load Classroom data
+                await loadClassroomData();
+                return;
+            }
+            
+            // Check if there's a valid remembered user session
+            if (isRememberedUserValid()) {
+                // Valid remembered user, restore session
+                const restoredUser = getValidRememberedUser();
+                if (restoredUser && supabase) {
+                    // Restore Supabase session if available
+                    const rememberedUserStr = localStorage.getItem('rememberedUser');
+                    if (rememberedUserStr) {
+                        try {
+                            const rememberedUser = JSON.parse(rememberedUserStr);
+                            if (rememberedUser.supabaseSession) {
+                                sessionStorage.setItem('supabaseSession', JSON.stringify(rememberedUser.supabaseSession));
+                            }
+                        } catch (e) {
+                            console.error('Error restoring Supabase session:', e);
+                        }
+                    }
+                    await loadClassroomData();
+                }
+                return;
+            }
+            
+            // User is not logged in, redirect to login
+            window.location.href = 'login.html';
+        });
+    </script>
+    <style>
+        @font-face {
+            font-family: "Aeonik-Medium";
+            src: url("https://anima-uploads.s3.amazonaws.com/5c7047e8842a8f000c9e2f06/Aeonik-Medium.ttf") format("truetype");
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --green-primary: #5ad567;
+            --green-light: #4fd25d;
+            --text-dark: #031504;
+            --text-medium: #3d483e;
+            --text-light: #5b6b5d;
+            --border-color: #d6ded7;
+            --white: #ffffff;
+            --bg-neutral: #fafafa;
+        }
+
+        body {
+            font-family: 'Inter', Helvetica, sans-serif;
+            background: var(--bg-neutral);
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* TopBar */
+        .topbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1440px;
+            height: 62px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+        }
+
+        .topbar-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 140px;
+        }
+
+        .topbar-logo img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .topbar-logo-text {
+            font-family: 'Aeonik-Medium', Helvetica, sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 300px;
+            height: 32px;
+            padding: 4px 4px 4px 10px;
+            background: #f7fbf7;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .search-icon {
+            width: 14px;
+            height: 14px;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-family: 'Inter', Helvetica, sans-serif;
+            font-size: 12px;
+            color: var(--text-light);
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-light);
+        }
+
+        .search-shortcut {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            height: 24px;
+            padding: 5px 6px;
+            background: white;
+            border-radius: 2px;
+            font-size: 10px;
+            color: var(--text-light);
+        }
+
+        .topbar-divider {
+            width: 1px;
+            height: 20px;
+            background: var(--border-color);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f7fbf7;
+            overflow: hidden;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: black;
+            line-height: 14px;
+        }
+
+        .user-grade {
+            font-size: 11px;
+            color: var(--text-light);
+            line-height: 11px;
+        }
+
+        .chevron-down {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Nav Sidebar */
+        .nav {
+            position: absolute;
+            top: 62px;
+            left: 0;
+            width: 260px;
+            height: 1225px;
+            background: white;
+            border-right: 2px solid var(--border-color);
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .nav-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 0 20px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #f7fbf7;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 100%),
+                        linear-gradient(0deg, var(--green-primary) 0%, var(--green-primary) 100%);
+            border: 4px solid rgba(90, 213, 103, 0.3);
+            box-shadow: 0px 1px 2px rgba(13, 13, 18, 0.06);
+        }
+
+        .nav-item.active .nav-item-text {
+            color: white;
+        }
+
+        .nav-item-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .nav-item-text {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-medium);
+        }
+
+        /* Main Content Frame */
+        .frame {
+            position: absolute;
+            top: 62px;
+            left: 260px;
+            width: 1183px;
+            height: 960px;
+            background: white;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .frame-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1181px;
+            height: 960px;
+            z-index: 0;
+        }
+
+        .frame-content {
+            position: relative;
+            z-index: 1;
+            height: 936px;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        /* Dashboard Header */
+        .dashboard-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .dashboard-title-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            width: 240px;
+        }
+
+        .dashboard-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 24px;
+            margin-bottom: 4px;
+        }
+
+        .dashboard-subtitle {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-light);
+            line-height: 21px;
+        }
+
+        .dashboard-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-set-goals {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+        }
+
+        .btn-new-task {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            height: 38px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 100%),
+                        linear-gradient(0deg, var(--green-primary) 0%, var(--green-primary) 100%);
+            border: 2px solid rgba(90, 213, 103, 0.3);
+            border-radius: 4px;
+            box-shadow: 0px 1px 2px rgba(13, 13, 18, 0.06);
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 263.75px;
+            height: 71px;
+            padding: 0 14px 0 16px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-shadow: 0px 0.88px 1.75px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+        }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 108.61px;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-light);
+            letter-spacing: 0.26px;
+            line-height: 10px;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 16px;
+        }
+
+        /* Main Content Grid */
+        .main-grid {
+            display: flex;
+            align-items: flex-start;
+            gap: 24px;
+        }
+
+        .main-left {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            width: 725.74px;
+        }
+
+        /* Today's Focus */
+        .todays-focus {
+            width: 725px;
+            height: 626.66px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0px 2.7px 5.4px -2.7px rgba(0, 0, 0, 0.05), 0px 0.9px 0.9px -0.45px rgba(0, 0, 0, 0.1);
+        }
+
+        .todays-focus-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 21.57px;
+            height: 87px;
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .todays-focus-title-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            width: 140.4px;
+            height: 43.16px;
+        }
+
+        .todays-focus-title {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            height: 25.18px;
+            margin-bottom: 0;
+        }
+
+        .todays-focus-title-icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        .todays-focus-title-text {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 25.2px;
+        }
+
+        .todays-focus-date {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-light);
+            line-height: 18px;
+        }
+
+        .todays-focus-calendar-icon {
+            width: 64.71px;
+            height: 28.76px;
+        }
+
+        .todays-focus-timeline {
+            padding: 22px;
+            background: rgba(249, 250, 251, 0.3);
+            height: 496px;
+            overflow-y: auto;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 21.57px;
+            padding-left: 22px;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 2px;
+            height: 108px;
+            background: #e5e7eb;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -5.5px;
+            top: 0;
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            border: 1.5px solid;
+            background: white;
+        }
+
+        .timeline-dot.completed {
+            background: var(--green-primary);
+            border-color: var(--green-primary);
+        }
+
+        .timeline-dot.in-progress {
+            background: white;
+            border-color: #2b7fff;
+        }
+
+        .timeline-dot.upcoming {
+            background: white;
+            border-color: #d0d5db;
+        }
+
+        .timeline-content {
+            display: flex;
+            flex-direction: column;
+            gap: 7.19px;
+        }
+
+        .timeline-time {
+            display: flex;
+            align-items: center;
+            gap: 10.79px;
+            height: 21.56px;
+        }
+
+        .time-badge {
+            padding: 4px 7px;
+            border-radius: 3.6px;
+            font-size: 10.8px;
+            font-weight: 700;
+        }
+
+        .time-badge.gray {
+            background: #f3f4f6;
+            color: var(--text-light);
+        }
+
+        .time-badge.blue {
+            background: #dbeafe;
+            color: #1347e5;
+        }
+
+        .time-duration {
+            display: flex;
+            align-items: center;
+            gap: 3.5px;
+            font-size: 10.8px;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+
+        .time-duration-icon {
+            width: 11px;
+            height: 11px;
+        }
+
+        .timeline-task-card {
+            padding: 18.48px 16px 0.5px;
+            background: white;
+            border: 0.5px solid var(--border-color);
+            border-radius: 4px;
+            box-shadow: 0px 2.7px 5.4px -2.7px rgba(0, 0, 0, 0.05), 0px 0.9px 0.9px -0.45px rgba(0, 0, 0, 0.1);
+        }
+
+        .timeline-task-card.completed {
+            opacity: 0.6;
+        }
+
+        .task-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            height: 42.03px;
+            margin-bottom: 0;
+        }
+
+        .task-title-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .task-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 21.6px;
+            text-decoration: line-through;
+        }
+
+        .task-title.active {
+            text-decoration: none;
+        }
+
+        .task-description {
+            font-size: 12px;
+            font-weight: 400;
+            color: var(--text-light);
+            line-height: 20.5px;
+            margin-top: 0;
+        }
+
+        .task-icon {
+            width: 28.77px;
+            height: 28.77px;
+        }
+
+        /* Private Notes */
+        .private-notes {
+            width: 725px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0px 2.69px 5.39px -2.69px rgba(0, 0, 0, 0.05), 0px 0.9px 0.9px -0.45px rgba(0, 0, 0, 0.1);
+        }
+
+        .private-notes-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 17.97px;
+            background: rgba(255, 255, 255, 0.8);
+            border-bottom: 0.5px solid #f2f4f6;
+        }
+
+        .private-notes-title-section {
+            display: flex;
+            align-items: center;
+            gap: 10.78px;
+        }
+
+        .private-notes-icon {
+            width: 28.74px;
+            height: 28.74px;
+        }
+
+        .private-notes-title-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .private-notes-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-dark);
+            line-height: 20.2px;
+        }
+
+        .private-notes-subtitle {
+            font-size: 10.8px;
+            font-weight: 500;
+            color: var(--text-light);
+            line-height: 14.4px;
+        }
+
+        .private-notes-actions {
+            display: flex;
+            align-items: center;
+            gap: 7.18px;
+        }
+
+        .private-notes-filter {
+            width: 51.28px;
+            height: 27.93px;
+        }
+
+        .btn-add-note {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 3px 12px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 100%),
+                        linear-gradient(0deg, var(--green-primary) 0%, var(--green-primary) 100%);
+            border: 2px solid rgba(90, 213, 103, 0.3);
+            border-radius: 4px;
+            box-shadow: 0px 1px 2px rgba(13, 13, 18, 0.06);
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+        }
+
+        .private-notes-search {
+            position: relative;
+            height: 33px;
+            margin: 0 18px;
+        }
+
+        .private-notes-search input {
+            width: 688px;
+            height: 33px;
+            padding: 7.19px 10.78px 7.19px 32.34px;
+            background: #f9fbf9;
+            border: 0.5px solid var(--border-color);
+            border-radius: 3.59px;
+            font-size: 12.6px;
+            color: var(--text-light);
+            outline: none;
+        }
+
+        .private-notes-search-icon {
+            position: absolute;
+            top: 10px;
+            left: 11px;
+            width: 13px;
+            height: 13px;
+        }
+
+        .private-notes-content {
+            padding: 20px;
+        }
+
+        .notes-section {
+            margin-bottom: 14.37px;
+        }
+
+        .notes-section-header {
+            display: flex;
+            align-items: center;
+            gap: 7.18px;
+            padding-left: 3.59px;
+            margin-bottom: 10.78px;
+        }
+
+        .notes-section-icon {
+            width: 12px;
+            height: 12px;
+        }
+
+        .notes-section-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #e17100;
+            letter-spacing: 0.55px;
+            line-height: 13.5px;
+        }
+
+        .notes-section-label.all {
+            color: var(--text-light);
+        }
+
+        .note-card {
+            padding: 14.87px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 3.59px;
+            margin-bottom: 14.37px;
+        }
+
+        .note-card.pinned {
+            background: #fef3c7;
+            border-color: #fde585;
+            box-shadow: 0px 0.9px 1.8px -0.9px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .note-text {
+            font-size: 12.6px;
+            font-weight: 400;
+            color: var(--text-dark);
+            line-height: 20.4px;
+            margin-bottom: 14.37px;
+        }
+
+        .note-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 10.78px;
+            border-top: 0.5px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .note-date {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 9px;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+
+        .note-date-icon {
+            width: 9px;
+            height: 9px;
+        }
+
+        .note-actions {
+            width: 71.83px;
+            height: 21.55px;
+        }
+
+        /* Main Right Column */
+        .main-right {
+            display: flex;
+                flex-direction: column;
+            gap: 24px;
+            flex: 1;
+        }
+
+        /* Calendar */
+        .calendar-card {
+            height: 338.2px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 20px;
+            box-shadow: 0px 2.7px 5.4px -2.7px rgba(0, 0, 0, 0.05), 0px 0.9px 0.9px -0.45px rgba(0, 0, 0, 0.1);
+        }
+
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 21.57px;
+        }
+
+        .calendar-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 21.6px;
+        }
+
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .calendar-nav-btn {
+            width: 21.57px;
+            height: 21.57px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .calendar-month {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-dark);
+            text-align: center;
+            line-height: 18px;
+        }
+
+        .calendar-weekdays {
+            display: flex;
+            margin-bottom: 0;
+        }
+
+        .calendar-weekday {
+            width: 40px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-light);
+            letter-spacing: 0.55px;
+        }
+
+        .calendar-days {
+            position: relative;
+            height: 215.85px;
+        }
+
+        .calendar-day {
+            position: absolute;
+            width: 39px;
+            height: 39px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: transparent;
+            border-radius: 3.6px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-light);
+            cursor: pointer;
+        }
+
+        .calendar-day:hover {
+            background: #f3f4f6;
+        }
+
+        .calendar-day.today {
+            width: 41px;
+            height: 41px;
+            background: var(--green-primary);
+            color: white;
+            box-shadow: 0px 1.8px 3.6px -1.8px rgba(0, 0, 0, 0.1), 0px 3.6px 5.4px -0.9px rgba(0, 0, 0, 0.1);
+        }
+
+        .calendar-day.has-event {
+            position: relative;
+        }
+
+        .calendar-day.has-event::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3.59px;
+            height: 3.59px;
+            background: var(--green-primary);
+            border-radius: 50%;
+        }
+
+        /* Due Soon */
+        .due-soon-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0px 2.7px 5.4px -2.7px rgba(0, 0, 0, 0.05), 0px 0.9px 0.9px -0.45px rgba(0, 0, 0, 0.1);
+        }
+
+        .due-soon-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 16px;
+            background: rgba(254, 242, 242, 0.5);
+            border-bottom: 1px solid #fee1e1;
+        }
+
+        .due-soon-title-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .due-soon-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .due-soon-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #c10007;
+            line-height: 18px;
+        }
+
+        .due-soon-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 6px 8px;
+            background: #ffe2e2;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 700;
+            color: #e7000b;
+            text-align: center;
+        }
+
+        .due-soon-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 16px;
+            border-bottom: 0.5px solid #f8fafb;
+        }
+
+        .due-soon-item:last-of-type {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .due-soon-item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3.59px;
+            flex: 1;
+        }
+
+        .due-soon-item-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 18px;
+        }
+
+        .due-soon-item-subject {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+
+        .due-soon-item-icon {
+            width: 10.79px;
+            height: 10.79px;
+        }
+
+        .due-soon-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-do-now {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 2px 8px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 100%),
+                        linear-gradient(0deg, var(--green-primary) 0%, var(--green-primary) 100%);
+            border: 2px solid rgba(90, 213, 103, 0.3);
+            border-radius: 4px;
+            box-shadow: 0px 1px 2px rgba(13, 13, 18, 0.06);
+            font-size: 12px;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+        }
+
+        .btn-overdue {
+            padding: 4px 12px;
+            background: #fef2f2;
+            border: 1px solid #ffe2e2;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #e7000b;
+        }
+
+        .due-soon-footer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 19px 0;
+            background: #f9fbf9;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn-view-all {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-light);
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Upcoming Tests */
+        .upcoming-tests {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 20px;
+            box-shadow: 0px 2.7px 5.4px -2.7px rgba(0, 0, 0, 0.05), 0px 0.9px 0.9px -0.45px rgba(0, 0, 0, 0.1);
+        }
+
+        .upcoming-tests-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .upcoming-tests-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 21.6px;
+        }
+
+        .upcoming-tests-view-all {
+            font-size: 10.8px;
+            font-weight: 700;
+            color: var(--text-light);
+            cursor: pointer;
+        }
+
+        .test-item {
+            display: flex;
+            align-items: center;
+            gap: 14.39px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .test-item:last-child {
+            border-bottom: none;
+        }
+
+        .test-date-card {
+            width: 43.16px;
+            height: 43.16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3.6px;
+            border: 0.5px solid;
+        }
+
+        .test-date-card.urgent {
+            background: #fef2f2;
+            border-color: #fee1e1;
+        }
+
+        .test-date-card.normal {
+            background: white;
+            border-color: var(--border-color);
+        }
+
+        .test-date-month {
+            font-size: 8.1px;
+            font-weight: 700;
+            opacity: 0.7;
+            letter-spacing: 0.55px;
+            line-height: 12.1px;
+        }
+
+        .test-date-month.urgent {
+            color: #e7000b;
+        }
+
+        .test-date-month.normal {
+            color: var(--text-light);
+        }
+
+        .test-date-day {
+            font-size: 16.2px;
+            font-weight: 900;
+            line-height: 16.2px;
+        }
+
+        .test-date-day.urgent {
+            color: #e7000b;
+        }
+
+        .test-date-day.normal {
+            color: var(--text-light);
+        }
+
+        .test-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3.59px;
+            flex: 1;
+        }
+
+        .test-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 18px;
+        }
+
+        .test-subject {
+            display: flex;
+            align-items: center;
+            gap: 7.19px;
+        }
+
+        .test-subject-dot {
+            width: 5.39px;
+            height: 5.39px;
+            border-radius: 50%;
+        }
+
+        .test-subject-name {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+
+        .test-indicator {
+            width: 5.39px;
+            height: 5.39px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <!-- TopBar -->
+    <div class="topbar">
+        <div class="topbar-logo">
+            <img src="https://c.animaapp.com/EEnRA4DR/img/-group-@2x.png" alt="PlexyAI Logo">
+            <div class="topbar-logo-text">PlexyAi</div>
+        </div>
+        <div class="topbar-right">
+            <div class="search-container">
+                <img src="https://c.animaapp.com/EEnRA4DR/img/search-1.svg" alt="Search" class="search-icon">
+                <input type="text" class="search-input" placeholder="Search">
+                <div class="search-shortcut">⌘+K</div>
+            </div>
+            <div class="topbar-divider"></div>
+            <div class="user-profile" id="userProfileDropdown" style="cursor: pointer; position: relative;">
+                <div class="user-avatar">
+                    <img src="https://c.animaapp.com/EEnRA4DR/img/image@2x.png" alt="User">
+                </div>
+                <div class="user-info">
+                    <div class="user-name">Alex Williams</div>
+                    <div class="user-grade">Grade 12</div>
+                </div>
+                <img src="https://c.animaapp.com/EEnRA4DR/img/navbar-company-selector.svg" alt="Dropdown" class="chevron-down">
+                <!-- Dropdown menu (hidden by default) -->
+                <div id="userDropdownMenu" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: white; border: 1px solid var(--border-color); border-radius: 4px; box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1); min-width: 150px; z-index: 1000;">
+                    <div style="padding: 8px 12px; cursor: pointer; font-size: 14px; color: var(--text-dark);" onmouseover="this.style.background='#f7fbf7'" onmouseout="this.style.background='white'" onclick="logout()">
+                        Log Out
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nav Sidebar -->
+    <div class="nav">
+        <div class="nav-section">
+            <div class="nav-item active">
+                <img src="https://c.animaapp.com/EEnRA4DR/img/element-3.png" alt="Home" class="nav-item-icon">
+                <div class="nav-item-text">Home</div>
+            </div>
+            <div class="nav-item" onclick="window.location.href='chatbot.html'">
+                <img src="https://c.animaapp.com/EEnRA4DR/img/message-chatbot-1.svg" alt="Chatbot" class="nav-item-icon">
+                <div class="nav-item-text">Chatbot</div>
+            </div>
+            <div class="nav-item">
+                <img src="https://c.animaapp.com/EEnRA4DR/img/books-1.svg" alt="Study" class="nav-item-icon">
+                <div class="nav-item-text">Study</div>
+            </div>
+            <div class="nav-item">
+                <img src="https://c.animaapp.com/EEnRA4DR/img/setting-2.png" alt="Settings" class="nav-item-icon">
+                <div class="nav-item-text">Settings</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Frame -->
+    <div class="frame">
+        <img src="https://c.animaapp.com/EEnRA4DR/img/background.svg" alt="Background" class="frame-background">
+        <div class="frame-content">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <div class="dashboard-title-section">
+                    <div class="dashboard-title">Dashboard</div>
+                    <div class="dashboard-subtitle">Overview of your academic progress</div>
+                </div>
+                <div class="dashboard-actions">
+                    <button class="btn-set-goals">
+                        <img src="https://c.animaapp.com/EEnRA4DR/img/icon.svg" alt="Icon" style="width: 14px; height: 14px;">
+                        Set Goals
+                    </button>
+                    <button class="btn-new-task">
+                        <img src="https://c.animaapp.com/EEnRA4DR/img/icon-1.svg" alt="Icon" style="width: 16px; height: 16px;">
+                        New Task
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <img src="https://c.animaapp.com/EEnRA4DR/img/container.svg" alt="Icon" class="stat-icon">
+                    <div class="stat-info">
+                        <div class="stat-label">DAILY STREAK</div>
+                        <div class="stat-value">5 Days</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <img src="https://c.animaapp.com/EEnRA4DR/img/container-1.svg" alt="Icon" class="stat-icon">
+                    <div class="stat-info">
+                        <div class="stat-label">TASKS COMPLETED</div>
+                        <div class="stat-value">12/15</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <img src="https://c.animaapp.com/EEnRA4DR/img/container-2.svg" alt="Icon" class="stat-icon">
+                    <div class="stat-info">
+                        <div class="stat-label">HOURS STUDIED</div>
+                        <div class="stat-value">24.5h</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <img src="https://c.animaapp.com/EEnRA4DR/img/container-3.svg" alt="Icon" class="stat-icon">
+                    <div class="stat-info">
+                        <div class="stat-label">AVG. GRADE</div>
+                        <div class="stat-value">A-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Grid -->
+            <div class="main-grid">
+                <div class="main-left">
+                    <!-- Today's Focus -->
+                    <div class="todays-focus">
+                        <div class="todays-focus-header">
+                            <div class="todays-focus-title-section">
+                                <div class="todays-focus-title">
+                                    <img src="https://c.animaapp.com/EEnRA4DR/img/icon-2.svg" alt="Icon" class="todays-focus-title-icon">
+                                    <div class="todays-focus-title-text">Today's Focus</div>
+                                </div>
+                                <div class="todays-focus-date">Tuesday, December 16</div>
+                            </div>
+                            <img src="https://c.animaapp.com/EEnRA4DR/img/container-4.svg" alt="Calendar" class="todays-focus-calendar-icon">
+                        </div>
+                        <div class="todays-focus-timeline">
+                            <!-- Timeline Item 1 - Completed -->
+                            <div class="timeline-item">
+                                <div class="timeline-line">
+                                    <div class="timeline-dot completed"></div>
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="timeline-time">
+                                        <div class="time-badge gray">09:00 AM</div>
+                                        <div class="time-duration">
+                                            <img src="https://c.animaapp.com/EEnRA4DR/img/icon-3.svg" alt="Clock" class="time-duration-icon">
+                                            1h
+                                        </div>
+                                    </div>
+                                    <div class="timeline-task-card completed">
+                                        <div class="task-header">
+                                            <div class="task-title-section">
+                                                <div class="task-title">Math Study Session</div>
+                                                <div class="task-description">Review quadratic equations and practice problems from Chapter 4.</div>
+                                            </div>
+                                            <img src="https://c.animaapp.com/EEnRA4DR/img/container-5.svg" alt="Check" class="task-icon">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Timeline Item 2 - In Progress -->
+                            <div class="timeline-item">
+                                <div class="timeline-line">
+                                    <div class="timeline-dot in-progress"></div>
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="timeline-time">
+                                        <div class="time-badge blue">11:00 AM</div>
+                                        <div class="time-duration">
+                                            <img src="https://c.animaapp.com/EEnRA4DR/img/icon-4.svg" alt="Clock" class="time-duration-icon">
+                                            45m
+                                        </div>
+                                    </div>
+                                    <div class="timeline-task-card">
+                                        <div class="task-header">
+                                            <div class="task-title-section">
+                                                <div class="task-title active">History Reading</div>
+                                                <div class="task-description">Read Chapter 12-14: The Industrial Revolution effects on urban life.</div>
+                                            </div>
+                                            <img src="https://c.animaapp.com/EEnRA4DR/img/container-8.svg" alt="Icon" class="task-icon">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Timeline Item 3 -->
+                            <div class="timeline-item">
+                                <div class="timeline-line">
+                                    <div class="timeline-dot upcoming"></div>
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="timeline-time">
+                                        <div class="time-badge gray">02:00 PM</div>
+                                        <div class="time-duration">
+                                            <img src="https://c.animaapp.com/EEnRA4DR/img/icon-5.svg" alt="Clock" class="time-duration-icon">
+                                            1h 30m
+                                        </div>
+                                    </div>
+                                    <div class="timeline-task-card">
+                                        <div class="task-header">
+                                            <div class="task-title-section">
+                                                <div class="task-title active">Science Lab Report</div>
+                                                <div class="task-description">Write up chemistry experiment results and draw conclusion graphs.</div>
+                                            </div>
+                                            <img src="https://c.animaapp.com/EEnRA4DR/img/container-8.svg" alt="Icon" class="task-icon">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Timeline Item 4 -->
+                            <div class="timeline-item">
+                                <div class="timeline-line">
+                                    <div class="timeline-dot upcoming"></div>
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="timeline-time">
+                                        <div class="time-badge gray">04:00 PM</div>
+                                        <div class="time-duration">
+                                            <img src="https://c.animaapp.com/EEnRA4DR/img/icon-6.svg" alt="Clock" class="time-duration-icon">
+                                            30m
+                                        </div>
+                                    </div>
+                                    <div class="timeline-task-card">
+                                        <div class="task-header">
+                                            <div class="task-title-section">
+                                                <div class="task-title active">Flashcards Review</div>
+                                                <div class="task-description">Review Biology terms for upcoming quiz.</div>
+                                            </div>
+                                            <img src="https://c.animaapp.com/EEnRA4DR/img/container-8.svg" alt="Icon" class="task-icon">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Private Notes -->
+                    <div class="private-notes">
+                        <div class="private-notes-header">
+                            <div class="private-notes-title-section">
+                                <img src="https://c.animaapp.com/EEnRA4DR/img/container-9.svg" alt="Notes" class="private-notes-icon">
+                                <div class="private-notes-title-info">
+                                    <div class="private-notes-title">Private Notes</div>
+                                    <div class="private-notes-subtitle">Personal reflections & reminders</div>
+                                </div>
+                            </div>
+                            <div class="private-notes-actions">
+                                <img src="https://c.animaapp.com/EEnRA4DR/img/container-10.svg" alt="Filter" class="private-notes-filter">
+                                <button class="btn-add-note">
+                                    <img src="https://c.animaapp.com/EEnRA4DR/img/icon-7.svg" alt="Add" style="width: 16px; height: 16px;">
+                                    Add Note
+                                </button>
+                            </div>
+                        </div>
+                        <div class="private-notes-search">
+                            <img src="https://c.animaapp.com/EEnRA4DR/img/icon-8.svg" alt="Search" class="private-notes-search-icon">
+                            <input type="text" placeholder="Search your notes...">
+                        </div>
+                        <div class="private-notes-content">
+                            <div class="notes-section">
+                                <div class="notes-section-header">
+                                    <img src="https://c.animaapp.com/EEnRA4DR/img/icon-9.svg" alt="Pin" class="notes-section-icon">
+                                    <div class="notes-section-label">PINNED</div>
+                                </div>
+                                <div class="note-card pinned" style="position: relative;">
+                                    <div class="note-text">Remember to review the quadratic formula before the math test on Friday. Focus on vertex form conversions.</div>
+                                    <div class="note-footer">
+                                        <div class="note-date">
+                                            <img src="https://c.animaapp.com/EEnRA4DR/img/icon-10.svg" alt="Clock" class="note-date-icon">
+                                            2d ago
+                                        </div>
+                                        <img src="https://c.animaapp.com/EEnRA4DR/img/container-12.svg" alt="Actions" class="note-actions">
+                                    </div>
+                                    <img src="https://c.animaapp.com/EEnRA4DR/img/commentcard.svg" alt="Pin" style="position: absolute; top: 1px; right: 15px; width: 22px; height: 22px;">
+                                </div>
+                            </div>
+                            <div class="notes-section">
+                                <div class="notes-section-header">
+                                    <div class="notes-section-label all">ALL NOTES</div>
+                                </div>
+                                <div class="note-card">
+                                    <div class="note-text">Great study session today! The Pomodoro technique really helped me stay focused.</div>
+                                    <div class="note-footer">
+                                        <div class="note-date">
+                                            <img src="https://c.animaapp.com/EEnRA4DR/img/icon-11.svg" alt="Clock" class="note-date-icon">
+                                            1d ago
+                                        </div>
+                                        <img src="https://c.animaapp.com/EEnRA4DR/img/container-12.svg" alt="Actions" class="note-actions">
+                                    </div>
+                                </div>
+                                <div class="note-card">
+                                    <div class="note-text">History chapter 12-14 summary: Industrial revolution changed urban landscapes fundamentally.</div>
+                                    <div class="note-footer">
+                                        <div class="note-date">
+                                            <img src="https://c.animaapp.com/EEnRA4DR/img/icon-12.svg" alt="Clock" class="note-date-icon">
+                                            3h ago
+                                        </div>
+                                        <img src="https://c.animaapp.com/EEnRA4DR/img/container-12.svg" alt="Actions" class="note-actions">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="main-right">
+                    <!-- Calendar -->
+                    <div class="calendar-card">
+                        <div class="calendar-header">
+                            <div class="calendar-title">Calendar</div>
+                            <div class="calendar-nav">
+                                <button class="calendar-nav-btn">
+                                    <img src="https://c.animaapp.com/EEnRA4DR/img/button.svg" alt="Previous" style="width: 21.57px; height: 21.57px;">
+                                </button>
+                                <div class="calendar-month">December</div>
+                                <button class="calendar-nav-btn">
+                                    <img src="https://c.animaapp.com/EEnRA4DR/img/button-1.svg" alt="Next" style="width: 21.57px; height: 21.57px;">
+                                </button>
+                            </div>
+                        </div>
+                        <div class="calendar-weekdays">
+                            <div class="calendar-weekday">SU</div>
+                            <div class="calendar-weekday">MO</div>
+                            <div class="calendar-weekday">TU</div>
+                            <div class="calendar-weekday">WE</div>
+                            <div class="calendar-weekday">TH</div>
+                            <div class="calendar-weekday">FR</div>
+                            <div class="calendar-weekday">SA</div>
+                        </div>
+                        <div class="calendar-days">
+                            <button class="calendar-day" style="top: 0; left: 44px;">1</button>
+                            <button class="calendar-day" style="top: 0; left: 88px;">2</button>
+                            <button class="calendar-day" style="top: 0; left: 132px;">3</button>
+                            <button class="calendar-day" style="top: 0; left: 176px;">4</button>
+                            <button class="calendar-day has-event" style="top: 0; left: 220px;">5</button>
+                            <button class="calendar-day" style="top: 0; left: 264px;">6</button>
+                            <button class="calendar-day" style="top: 44px; left: 0;">7</button>
+                            <button class="calendar-day" style="top: 44px; left: 44px;">8</button>
+                            <button class="calendar-day" style="top: 44px; left: 88px;">9</button>
+                            <button class="calendar-day" style="top: 44px; left: 132px;">10</button>
+                            <button class="calendar-day" style="top: 44px; left: 176px;">11</button>
+                            <button class="calendar-day has-event" style="top: 44px; left: 220px;">12</button>
+                            <button class="calendar-day" style="top: 44px; left: 264px;">13</button>
+                            <button class="calendar-day" style="top: 88px; left: 0;">14</button>
+                            <button class="calendar-day" style="top: 88px; left: 44px;">15</button>
+                            <button class="calendar-day today" style="top: 88px; left: 88px;">16</button>
+                            <button class="calendar-day" style="top: 88px; left: 132px;">17</button>
+                            <button class="calendar-day" style="top: 88px; left: 176px;">18</button>
+                            <button class="calendar-day" style="top: 88px; left: 220px;">19</button>
+                            <button class="calendar-day has-event" style="top: 88px; left: 264px;">20</button>
+                            <button class="calendar-day" style="top: 132px; left: 0;">21</button>
+                            <button class="calendar-day" style="top: 132px; left: 44px;">22</button>
+                            <button class="calendar-day" style="top: 132px; left: 88px;">23</button>
+                            <button class="calendar-day" style="top: 132px; left: 132px;">24</button>
+                            <button class="calendar-day has-event" style="top: 132px; left: 176px;">25</button>
+                            <button class="calendar-day" style="top: 132px; left: 220px;">26</button>
+                            <button class="calendar-day" style="top: 132px; left: 264px;">27</button>
+                            <button class="calendar-day" style="top: 176px; left: 0;">28</button>
+                            <button class="calendar-day" style="top: 176px; left: 44px;">29</button>
+                            <button class="calendar-day" style="top: 176px; left: 88px;">30</button>
+                            <button class="calendar-day" style="top: 176px; left: 132px;">31</button>
+                        </div>
+                    </div>
+
+                    <!-- Due Soon -->
+                    <div class="due-soon-card">
+                        <div class="due-soon-header">
+                            <div class="due-soon-title-section">
+                                <img src="https://c.animaapp.com/EEnRA4DR/img/container-11.svg" alt="Due Soon" class="due-soon-icon">
+                                <div class="due-soon-title">Due Soon</div>
+                            </div>
+                            <div class="due-soon-badge">2 ITEMS</div>
+                        </div>
+                        <div>
+                            <div class="due-soon-item">
+                                <div class="due-soon-item-info">
+                                    <div class="due-soon-item-title">Essay on Shakespeare</div>
+                                    <div class="due-soon-item-subject">
+                                        <img src="https://c.animaapp.com/EEnRA4DR/img/icon-13.svg" alt="Subject" class="due-soon-item-icon">
+                                        English
+                                    </div>
+                                </div>
+                                <button class="btn-do-now">Do now</button>
+                            </div>
+                            <div class="due-soon-item">
+                                <div class="due-soon-item-info">
+                                    <div class="due-soon-item-title">Problem Set 7</div>
+                                    <div class="due-soon-item-subject">
+                                        <img src="https://c.animaapp.com/EEnRA4DR/img/icon-14.svg" alt="Subject" class="due-soon-item-icon">
+                                        Math
+                                    </div>
+                                </div>
+                                <div class="due-soon-item-actions">
+                                    <button class="btn-overdue">Overdue</button>
+                                    <button class="btn-do-now">Do now</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="due-soon-footer">
+                            <button class="btn-view-all">View all tasks</button>
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Tests -->
+                    <div class="upcoming-tests">
+                        <div class="upcoming-tests-header">
+                            <div class="upcoming-tests-title">Upcoming Tests</div>
+                            <div class="upcoming-tests-view-all">View All</div>
+                        </div>
+                        <div>
+                            <div class="test-item">
+                                <div class="test-date-card urgent">
+                                    <div class="test-date-month urgent">DEC</div>
+                                    <div class="test-date-day urgent">20</div>
+                                </div>
+                                <div class="test-info">
+                                    <div class="test-title">Chapter 5 Quiz</div>
+                                    <div class="test-subject">
+                                        <div class="test-subject-dot" style="background: #2b7fff;"></div>
+                                        <div class="test-subject-name">Mathematics</div>
+                                    </div>
+                                </div>
+                                <div class="test-indicator" style="background: #fb2c36;"></div>
+                            </div>
+                            <div style="width: 100%; height: 1px; background: var(--border-color); margin: 0;"></div>
+                            <div class="test-item">
+                                <div class="test-date-card normal">
+                                    <div class="test-date-month normal">DEC</div>
+                                    <div class="test-date-day normal">22</div>
+                                </div>
+                                <div class="test-info">
+                                    <div class="test-title">World War II Exam</div>
+                                    <div class="test-subject">
+                                        <div class="test-subject-dot" style="background: #fe9a00;"></div>
+                                        <div class="test-subject-name">History</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="width: 100%; height: 1px; background: var(--border-color); margin: 0;"></div>
+                            <div class="test-item">
+                                <div class="test-date-card normal">
+                                    <div class="test-date-month normal">DEC</div>
+                                    <div class="test-date-day normal">25</div>
+                                </div>
+                                <div class="test-info">
+                                    <div class="test-title">Chemistry Lab Test</div>
+                                    <div class="test-subject">
+                                        <div class="test-subject-dot" style="background: #ad46ff;"></div>
+                                        <div class="test-subject-name">Science</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

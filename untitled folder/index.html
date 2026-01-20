@@ -1,0 +1,2360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlexyAI - Study Smarter, Not Harder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Satoshi:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: "Aeonik-Medium";
+            src: url("https://anima-uploads.s3.amazonaws.com/5c7047e8842a8f000c9e2f06/Aeonik-Medium.ttf") format("truetype");
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --green-primary: #5ad567;
+            --green-light: #4fd25d;
+            --green-dark: #1e3931;
+            --green-darker: #0f1f1a;
+            --text-dark: #031504;
+            --text-medium: #3d483e;
+            --text-light: #5b6b5d;
+            --text-lighter: #4a6555;
+            --border-color: #d6ded7;
+            --white: #ffffff;
+            --bg-gray: #f2f4f6;
+        }
+
+        body {
+            font-family: 'Inter', Helvetica, sans-serif;
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            padding: 20px 53px;
+        }
+
+        .header-content {
+            max-width: 1440px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo img {
+            width: 30px;
+            height: 30px;
+        }
+
+        .logo-text {
+            font-family: 'Aeonik-Medium', Helvetica, sans-serif;
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .nav-link {
+            font-family: 'Satoshi', Helvetica, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--green-light);
+        }
+
+        .get-started-btn {
+            padding: 8px 16px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 100%),
+                        linear-gradient(0deg, var(--green-primary) 0%, var(--green-primary) 100%);
+            border: 4px solid rgba(90, 213, 103, 0.3);
+            border-radius: 4px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .get-started-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0px 4px 12px rgba(90, 213, 103, 0.3);
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 120px 75px 60px;
+            background: linear-gradient(135deg, rgba(79, 210, 93, 0.25) 0%, rgba(90, 213, 103, 0.15) 50%, rgba(79, 210, 93, 0.1) 100%);
+        }
+
+        .background-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 1440px;
+            height: 839px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .background-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1290px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 40px;
+        }
+
+        .hero-left {
+            flex: 1;
+            max-width: 650px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: white;
+            border: 0.52px solid var(--border-color);
+            border-radius: 100px;
+            margin-bottom: 30px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-dark);
+            box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .badge::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--green-light);
+            border-radius: 50%;
+            opacity: 0.72;
+        }
+
+        .hero-title {
+            font-size: 68px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 30px;
+            color: var(--text-dark);
+        }
+
+        .hero-title .highlight {
+            color: var(--green-light);
+            position: relative;
+        }
+
+        .hero-title .highlight::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--green-light);
+        }
+
+        .hero-description {
+            font-size: 19px;
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn-primary {
+            padding: 15px 32px;
+            background: var(--green-light);
+            border-radius: 4px;
+            color: white;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0px 4px 13px rgba(79, 210, 93, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            padding: 15px 32px;
+            background: white;
+            border: 1.57px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-dark);
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: border-color 0.2s;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--green-light);
+            color: var(--green-light);
+        }
+
+        .hero-features {
+            display: flex;
+            gap: 30px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .hero-feature {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hero-feature::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--green-light);
+            border-radius: 50%;
+            opacity: 0.8;
+        }
+
+        .hero-right {
+            flex: 1;
+            max-width: 561px;
+            position: relative;
+        }
+
+        .dashboard-preview {
+            width: 100%;
+            border-radius: 4px;
+            box-shadow: 0px 20px 41px rgba(0, 0, 0, 0.25);
+            border: 0.45px solid var(--border-color);
+            pointer-events: none;
+        }
+
+        .dashboard-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .dashboard-card {
+            background: #f9fafb;
+            border: 0.45px solid var(--border-color);
+            border-radius: 3.26px;
+            overflow: hidden;
+            box-shadow: 0px 20px 41px rgba(0, 0, 0, 0.25);
+            position: relative;
+        }
+
+        .dashboard-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 19.57px;
+            background: white;
+            border-bottom: 0.45px solid var(--bg-gray);
+        }
+
+        .dashboard-logo {
+            display: flex;
+            align-items: center;
+            gap: 7.62px;
+        }
+
+        .dashboard-logo img {
+            width: 19px;
+            height: 19px;
+        }
+
+        .dashboard-logo-text {
+            font-family: 'Aeonik-Medium', Helvetica, sans-serif;
+            font-size: 15.2px;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .dashboard-close {
+            width: 26px;
+            height: 26px;
+            background: #e5e7eb;
+            border-radius: 50%;
+        }
+
+        .dashboard-stats {
+            display: flex;
+            gap: 9.78px;
+            padding: 19.57px;
+        }
+
+        .dashboard-stat-card {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 9.78px;
+            padding: 13.05px;
+            background: white;
+            border: 0.45px solid var(--border-color);
+            border-radius: 3.26px;
+        }
+
+        .dashboard-stat-icon {
+            width: 32.62px;
+            height: 32.62px;
+        }
+
+        .dashboard-stat-value {
+            font-size: 14.7px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .dashboard-stat-label {
+            font-size: 8.2px;
+            font-weight: 500;
+            color: var(--text-light);
+            letter-spacing: 0.3px;
+        }
+
+        .dashboard-quiz-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 13.05px;
+            padding: 0 19.57px 19.57px;
+        }
+
+        .dashboard-quiz-card {
+            background: white;
+            border: 0.45px solid var(--border-color);
+            border-radius: 3.26px;
+            padding: 13.5px;
+        }
+
+        .dashboard-quiz-header {
+            display: flex;
+            align-items: center;
+            gap: 6.52px;
+            margin-bottom: 6.52px;
+        }
+
+        .dashboard-quiz-subject {
+            font-size: 9.8px;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .dashboard-quiz-score {
+            font-size: 11.4px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .dashboard-quiz-topic {
+            font-size: 11.4px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 6.52px;
+        }
+
+        .dashboard-quiz-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 6.52px;
+            border-top: 0.45px solid var(--bg-gray);
+        }
+
+        .dashboard-quiz-attempts {
+            font-size: 7.3px;
+            font-weight: 700;
+            color: var(--text-light);
+            letter-spacing: 0.5px;
+        }
+
+        .dashboard-floating-card {
+            position: absolute;
+            background: white;
+            border: 0.45px solid var(--border-color);
+            border-radius: 3.26px;
+            padding: 13.5px;
+            box-shadow: 0px 6.52px 8.16px rgba(0, 0, 0, 0.1), 0px 16.31px 20.39px rgba(0, 0, 0, 0.1);
+        }
+
+        .grade-boost-card {
+            top: 65px;
+            left: -39px;
+            width: 142px;
+        }
+
+        .streak-card {
+            top: 238px;
+            right: -39px;
+            width: 110px;
+        }
+
+        .floating-card-content {
+            display: flex;
+            align-items: center;
+            gap: 9.78px;
+        }
+
+        .floating-card-icon {
+            width: 32.62px;
+            height: 32.62px;
+        }
+
+        .floating-card-value {
+            font-size: 14.7px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .floating-card-label {
+            font-size: 9.8px;
+            font-weight: 700;
+            color: var(--text-light);
+        }
+
+        /* Stats Section */
+        .stats {
+            padding: 40px 75px;
+            background: white;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            max-width: 1440px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .stats::before,
+        .stats::after {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            filter: blur(140px);
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 0;
+            mask-image: radial-gradient(ellipse, black 20%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse, black 20%, transparent 80%);
+        }
+
+        .stats::before {
+            background: radial-gradient(circle, rgba(79, 210, 93, 0.4) 0%, rgba(79, 210, 93, 0.2) 40%, rgba(79, 210, 93, 0.1) 70%, transparent 100%);
+            top: -300px;
+            left: -200px;
+        }
+
+        .stats::after {
+            background: radial-gradient(circle, rgba(79, 210, 93, 0.35) 0%, rgba(79, 210, 93, 0.18) 40%, rgba(79, 210, 93, 0.08) 70%, transparent 100%);
+            bottom: -300px;
+            right: -200px;
+        }
+
+        .stat-item {
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-item {
+            flex: 1;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+
+        .stat-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .stat-item:hover .stat-number {
+            color: var(--green-light);
+            transition: color 0.2s;
+        }
+
+        /* Quiz Preview Section */
+        .quiz-preview-section {
+            padding: 100px 75px;
+            background: white;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 80px;
+            max-width: 1440px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .quiz-preview-section::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(79, 210, 93, 0.4) 0%, rgba(79, 210, 93, 0.2) 50%, transparent 100%);
+            filter: blur(120px);
+            opacity: 0.4;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 0;
+            mask-image: radial-gradient(ellipse, black 40%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse, black 40%, transparent 80%);
+        }
+
+        .quiz-preview-left,
+        .quiz-preview-right {
+            position: relative;
+            z-index: 1;
+        }
+
+        .quiz-preview-left {
+            flex: 1;
+        }
+
+        .quiz-preview-right {
+            flex: 1;
+            position: relative;
+        }
+
+        .quiz-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: rgba(79, 210, 93, 0.1);
+            border: 0.56px solid var(--green-light);
+            border-radius: 100px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--green-light);
+            letter-spacing: 0.6px;
+        }
+
+        .quiz-preview-card {
+            background: white;
+            border: 0.85px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0px 20px 41px rgba(0, 0, 0, 0.25);
+        }
+
+        .quiz-header {
+            padding: 20px 27px;
+            background: white;
+            border-bottom: 0.47px solid var(--bg-gray);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .quiz-type {
+            padding: 6px 10px;
+            background: rgba(79, 210, 93, 0.1);
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--green-light);
+            letter-spacing: 0.5px;
+        }
+
+        .quiz-question-number {
+            font-size: 10px;
+            font-weight: 700;
+            color: #99a1ae;
+            letter-spacing: 0.5px;
+        }
+
+        .quiz-body {
+            padding: 27px;
+        }
+
+        .quiz-question {
+            font-size: 21px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .quiz-option {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px;
+            margin-bottom: 10px;
+            border: 1.42px solid var(--bg-gray);
+            border-radius: 4px;
+            pointer-events: none;
+            cursor: default;
+        }
+
+        .quiz-option.selected {
+            background: var(--text-dark);
+            border-color: var(--text-dark);
+            color: white;
+        }
+
+        .quiz-option-letter {
+            width: 27px;
+            height: 27px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 0.47px solid var(--border-color);
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #99a1ae;
+        }
+
+        .quiz-option.selected .quiz-option-letter {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: transparent;
+            color: white;
+        }
+
+        .quiz-option-text {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .quiz-footer {
+            padding: 17px;
+            background: var(--bg-gray);
+            border-top: 0.47px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .quiz-next-btn {
+            padding: 10px 35px;
+            background: var(--green-light);
+            border-radius: 4px;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            pointer-events: none;
+            cursor: default;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Study Section */
+        .study-section {
+            padding: 100px 75px;
+            background: white;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 80px;
+            max-width: 1440px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .study-section::before,
+        .study-section::after {
+            content: '';
+            position: absolute;
+            width: 550px;
+            height: 550px;
+            border-radius: 50%;
+            filter: blur(110px);
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 0;
+            mask-image: radial-gradient(ellipse, black 30%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse, black 30%, transparent 70%);
+        }
+
+        .study-section::before {
+            background: radial-gradient(circle, rgba(79, 210, 93, 0.5) 0%, rgba(79, 210, 93, 0.3) 50%, transparent 100%);
+            top: -200px;
+            right: 5%;
+        }
+
+        .study-section::after {
+            background: radial-gradient(circle, rgba(79, 210, 93, 0.45) 0%, rgba(79, 210, 93, 0.25) 50%, transparent 100%);
+            bottom: -200px;
+            left: 5%;
+        }
+
+        .study-left,
+        .study-right {
+            position: relative;
+            z-index: 1;
+        }
+
+        .study-left {
+            flex: 1;
+        }
+
+        .study-right {
+            flex: 1;
+            position: relative;
+        }
+
+        .study-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: #f2e7fe;
+            border: 0.56px solid #e9d4ff;
+            border-radius: 100px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #8200da;
+            letter-spacing: 0.6px;
+        }
+
+        .study-card {
+            background: white;
+            border: 0.85px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .study-card-header {
+            padding: 20px 27px;
+            background: white;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .study-card-body {
+            padding: 27px;
+        }
+
+        .study-input-label {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .study-input {
+            width: 100%;
+            height: 85px;
+            background: var(--bg-gray);
+            border: 0.47px solid var(--border-color);
+            border-radius: 4px;
+            padding: 14px;
+            font-size: 14px;
+            color: var(--text-dark);
+            pointer-events: none;
+            cursor: default;
+        }
+
+        .study-format-options {
+            display: flex;
+            gap: 13px;
+            margin-top: 20px;
+        }
+
+        .study-format-option {
+            flex: 1;
+            height: 82px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.42px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            pointer-events: none;
+            cursor: default;
+        }
+
+        .study-format-option.selected {
+            border-color: var(--green-light);
+            background: white;
+            box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Features Grid Section */
+        .features-section {
+            padding: 100px 75px;
+            background: white;
+            position: relative;
+            max-width: 1440px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 60px;
+            overflow: hidden;
+        }
+
+        .features-section::before {
+            content: '';
+            position: absolute;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(79, 210, 93, 0.45) 0%, rgba(79, 210, 93, 0.25) 50%, transparent 100%);
+            filter: blur(140px);
+            opacity: 0.4;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 0;
+            mask-image: radial-gradient(ellipse, black 40%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse, black 40%, transparent 80%);
+        }
+
+        .features-header,
+        .features-grid {
+            position: relative;
+            z-index: 1;
+        }
+
+        .features-header {
+            text-align: center;
+            max-width: 768px;
+        }
+
+        .features-grid {
+            position: relative;
+            width: 1240px;
+            height: 529px;
+            margin-top: 0;
+        }
+
+        .feature-card {
+            position: absolute;
+            border-radius: 3.44px;
+            border: 1px solid var(--border-color);
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 22.4px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--green-light);
+            box-shadow: 0px 4px 12px rgba(79, 210, 93, 0.15);
+        }
+
+        .feature-card-large {
+            width: 610px;
+            height: 254px;
+        }
+
+        .feature-card-medium {
+            width: 295px;
+            height: 254px;
+        }
+
+        .feature-card-1 {
+            top: 0;
+            left: 0;
+            background: white;
+        }
+
+        .feature-card-2 {
+            top: 0;
+            left: 630px;
+            background: #eff6ff;
+        }
+
+        .feature-card-3 {
+            top: 0;
+            left: 945px;
+            background: #faf5ff;
+        }
+
+        .feature-card-4 {
+            top: 275px;
+            left: 0;
+            background: #fff7ed;
+        }
+
+        .feature-card-5 {
+            top: 275px;
+            left: 630px;
+            background: #fdf2f8;
+        }
+
+        .feature-card-6 {
+            top: 275px;
+            left: 945px;
+            background: #f0fdfa;
+        }
+
+        .feature-card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .feature-card h3 {
+            font-size: 20.7px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0;
+            line-height: 27.6px;
+        }
+
+        .feature-card p {
+            font-size: 13.8px;
+            color: var(--text-lighter);
+            line-height: 22.4px;
+            margin-top: 0;
+        }
+
+        .feature-card-icon {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+        }
+
+        /* Comparison Section - Solid Black */
+        .comparison-section {
+            padding: 100px 75px;
+            background: var(--text-dark);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .comparison-section::before,
+        .comparison-section::after {
+            content: '';
+            position: absolute;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            filter: blur(160px);
+            opacity: 0.25;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .comparison-section::before {
+            background: radial-gradient(circle, rgba(79, 210, 93, 0.4) 0%, rgba(79, 210, 93, 0.22) 40%, rgba(79, 210, 93, 0.1) 70%, transparent 100%);
+            top: -300px;
+            left: -200px;
+        }
+
+        .comparison-section::after {
+            background: radial-gradient(circle, rgba(79, 210, 93, 0.35) 0%, rgba(79, 210, 93, 0.18) 40%, rgba(79, 210, 93, 0.08) 70%, transparent 100%);
+            bottom: -300px;
+            right: -200px;
+        }
+
+        .comparison-content {
+            max-width: 1440px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .comparison-title {
+            font-family: 'Satoshi', Helvetica, sans-serif;
+            font-size: 48px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 0px 0px 20px rgba(79, 210, 93, 0.3);
+        }
+
+        .comparison-description {
+            font-size: 20px;
+            color: #99a1ae;
+            margin-bottom: 60px;
+        }
+
+        .comparison-table {
+            background: rgba(30, 57, 49, 0.6);
+            border: 1px solid rgba(79, 210, 93, 0.3);
+            border-radius: 4px;
+            overflow: hidden;
+            max-width: 896px;
+            margin: 0 auto;
+            box-shadow: 0px 0px 60px rgba(79, 210, 93, 0.15), 0px 0px 20px rgba(79, 210, 93, 0.1);
+        }
+
+        .comparison-header {
+            background: rgba(30, 57, 37, 0.9);
+            border-bottom: 1px solid rgba(79, 210, 93, 0.25);
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 24px;
+            box-shadow: inset 0px -1px 0px rgba(79, 210, 93, 0.2);
+        }
+
+        .comparison-header-cell {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .comparison-header-cell:first-child {
+            color: #99aea1;
+            text-align: left;
+        }
+
+        .comparison-header-cell:nth-child(2) {
+            color: var(--green-light);
+            text-align: center;
+            text-shadow: 0px 0px 10px rgba(79, 210, 93, 0.5);
+        }
+
+        .comparison-header-cell:nth-child(3) {
+            color: #698274;
+            text-align: center;
+        }
+
+        .comparison-row {
+            padding: 28px 24px;
+            border-bottom: 0.56px solid rgba(79, 210, 93, 0.15);
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 24px;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .comparison-row:hover {
+            background: rgba(79, 210, 93, 0.05);
+        }
+
+        .comparison-row:last-child {
+            border-bottom: none;
+        }
+
+        .comparison-cell {
+            font-size: 16px;
+            color: #e5e5e5;
+        }
+
+        .comparison-cell:first-child {
+            text-align: left;
+        }
+
+        .comparison-cell:nth-child(2),
+        .comparison-cell:nth-child(3) {
+            text-align: center;
+        }
+
+        .check-icon {
+            width: 32px;
+            height: 32px;
+            margin: 0 auto;
+            filter: drop-shadow(0px 0px 8px rgba(79, 210, 93, 0.6));
+        }
+
+        .x-icon {
+            width: 282px;
+            height: 20px;
+            margin: 0 auto;
+        }
+
+        /* Testimonials Section */
+        .testimonials-section {
+            padding: 100px 75px;
+            background: white;
+            position: relative;
+            max-width: 1440px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .testimonials-section::before,
+        .testimonials-section::after {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            filter: blur(110px);
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 0;
+            mask-image: radial-gradient(ellipse, black 30%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse, black 30%, transparent 70%);
+        }
+
+        .testimonials-section::before {
+            background: radial-gradient(circle, rgba(79, 210, 93, 0.4) 0%, rgba(79, 210, 93, 0.22) 40%, rgba(79, 210, 93, 0.1) 70%, transparent 100%);
+            top: 15%;
+            left: -100px;
+        }
+
+        .testimonials-section::after {
+            background: radial-gradient(circle, rgba(79, 210, 93, 0.35) 0%, rgba(79, 210, 93, 0.18) 40%, rgba(79, 210, 93, 0.08) 70%, transparent 100%);
+            bottom: 15%;
+            right: -100px;
+        }
+
+        .testimonials-grid {
+            position: relative;
+            z-index: 1;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            margin-top: 60px;
+        }
+
+        .testimonial-card {
+            padding: 33px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .testimonial-card:hover {
+            border-color: var(--green-light);
+            box-shadow: 0px 4px 12px rgba(79, 210, 93, 0.15);
+        }
+
+        .testimonial-quote {
+            width: 100%;
+            height: 4px;
+            margin-bottom: 24px;
+        }
+
+        .testimonial-text {
+            font-size: 16px;
+            color: var(--text-lighter);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .testimonial-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 1.67px solid var(--green-light);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-gray);
+        }
+
+        .testimonial-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .testimonial-info h4 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .testimonial-info p {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-lighter);
+        }
+
+        /* CTA Section - Solid Black */
+        .cta-section {
+            padding: 160px 100px 160px;
+            background: white;
+            text-align: center;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .cta-section::before,
+        .cta-section::after {
+            content: '';
+            position: absolute;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            filter: blur(160px);
+            opacity: 0.35;
+            pointer-events: none;
+            z-index: 0;
+            mask-image: radial-gradient(ellipse, black 20%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse, black 20%, transparent 80%);
+        }
+
+        .cta-section::before {
+            background: radial-gradient(circle, rgba(79, 210, 93, 0.45) 0%, rgba(79, 210, 93, 0.25) 40%, rgba(79, 210, 93, 0.12) 70%, transparent 100%);
+            top: 5%;
+            left: 0%;
+        }
+
+        .cta-section::after {
+            background: radial-gradient(circle, rgba(79, 210, 93, 0.4) 0%, rgba(79, 210, 93, 0.22) 40%, rgba(79, 210, 93, 0.1) 70%, transparent 100%);
+            bottom: 5%;
+            right: 0%;
+        }
+
+        .cta-content-inner {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-content {
+            width: 1240.91px;
+            max-width: 100%;
+            background: linear-gradient(135deg, var(--text-dark) 0%, rgba(3, 21, 4, 0.98) 50%, var(--text-dark) 100%);
+            border: 1px solid rgba(79, 210, 93, 0.1);
+            border-radius: 4px;
+            padding: 80px;
+            box-shadow: 0px 23.2px 46.41px rgba(0, 0, 0, 0.25), 0px 0px 60px rgba(79, 210, 93, 0.1);
+            position: relative;
+            overflow: visible;
+            box-sizing: border-box;
+        }
+
+        .cta-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at top left, rgba(79, 210, 93, 0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at bottom right, rgba(79, 210, 93, 0.06) 0%, transparent 50%);
+            border-radius: 4px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .cta-content-inner {
+            position: relative;
+            width: 100%;
+            height: 406.98px;
+            overflow: hidden;
+        }
+
+        .cta-left {
+            width: 640px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 21px;
+        }
+
+        .cta-left::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            left: -40px;
+            right: -40px;
+            bottom: -40px;
+            background-image: radial-gradient(circle, rgba(79, 210, 93, 0.3) 1px, transparent 1px);
+            background-size: 24px 24px;
+            background-position: 0 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+
+        .cta-right {
+            position: absolute;
+            top: 117px;
+            left: 640px;
+            width: 400px;
+            height: 173px;
+            padding: 0;
+            overflow: visible;
+        }
+
+        .progress-dashboard {
+            background: #151b16;
+            border: 0.47px solid rgba(255, 255, 255, 0.1);
+            border-radius: 3.4px;
+            box-shadow: 0px 21.28px 42.55px rgba(0, 0, 0, 0.25);
+            position: absolute;
+            top: -1.5px;
+            left: 9px;
+            width: 398px;
+            height: 179px;
+            padding: 0;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0;
+            border-bottom: 0.47px solid rgba(255, 255, 255, 0.05);
+            margin: 14.8px 0 0 15.3px;
+            width: 364.87px;
+            max-width: calc(100% - 30.6px);
+            height: 33.21px;
+            gap: 238.4px;
+        }
+
+        .progress-dots {
+            display: flex;
+            gap: 6.05px;
+        }
+
+        .progress-dot {
+            width: 9.5px;
+            height: 10px;
+            border-radius: 50%;
+            border: 0.47px solid;
+        }
+
+        .progress-dot.red {
+            background: rgba(251, 44, 54, 0.2);
+            border-color: rgba(250, 43, 54, 0.5);
+        }
+
+        .progress-dot.yellow {
+            background: rgba(240, 177, 0, 0.2);
+            border-color: rgba(240, 176, 0, 0.5);
+        }
+
+        .progress-dot.green {
+            background: rgba(0, 201, 80, 0.2);
+            border-color: rgba(0, 200, 80, 0.5);
+        }
+
+        .progress-title-text {
+            font-size: 8.5px;
+            color: #698276;
+            font-weight: 400;
+        }
+
+        .progress-items-container {
+            margin: 0 0 0 13.2px;
+            width: 369.44px;
+            max-width: calc(100% - 26.4px);
+            height: 111.75px;
+            display: flex;
+            flex-direction: column;
+            gap: 5.98px;
+            padding: 0 1.2px 0 1.03px;
+        }
+
+        .progress-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 0.47px solid rgba(255, 255, 255, 0.05);
+            border-radius: 3.4px;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            position: relative;
+        }
+
+        .progress-item:first-child {
+            height: 54.81px;
+        }
+
+        .progress-item:last-child {
+            height: 50.96px;
+        }
+
+        .progress-item-icon {
+            width: 26px;
+            height: 27px;
+            position: absolute;
+            left: 10px;
+        }
+
+        .progress-item:first-child .progress-item-icon {
+            top: 18px;
+            left: 10px;
+        }
+
+        .progress-item:last-child .progress-item-icon {
+            top: 14px;
+            left: 10px;
+        }
+
+        .progress-bar-container {
+            position: absolute;
+            left: 45px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .progress-item:first-child .progress-bar-container {
+            top: 19px;
+            width: 274px;
+            height: 18px;
+            gap: 4.3px;
+        }
+
+        .progress-item:last-child .progress-bar-container {
+            top: 19px;
+            width: 270px;
+            height: 15px;
+            gap: 4.8px;
+        }
+
+        .progress-bar-main {
+            height: 6.4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3.4px;
+        }
+
+        .progress-item:last-child .progress-bar-main {
+            height: 5.44px;
+        }
+
+        .progress-bar-sub {
+            height: 3.94px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3.4px;
+        }
+
+        .progress-item:last-child .progress-bar-sub {
+            height: 3.57px;
+        }
+
+        .progress-percentage {
+            font-size: 10.2px;
+            font-weight: 700;
+            color: var(--green-light);
+            position: absolute;
+            top: 18px;
+        }
+
+        .progress-item:first-child .progress-percentage {
+            left: 329px;
+            width: 26px;
+            height: 14px;
+        }
+
+        .progress-item:last-child .progress-percentage {
+            left: 326px;
+            width: 32px;
+            height: 14px;
+        }
+
+        .gpa-card {
+            position: absolute;
+            top: 123px;
+            left: 280px;
+            width: 147px;
+            height: 75px;
+            background: white;
+            border-radius: 3.4px;
+            padding: 0 0 0 17.02px;
+            box-shadow: 0px 6.81px 8.51px rgba(0, 0, 0, 0.1), 0px 17.02px 21.28px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 13.62px;
+            z-index: 10;
+            box-sizing: border-box;
+        }
+        
+        
+        .cta-content {
+            overflow: visible;
+        }
+
+        .gpa-icon {
+            width: 40.85px;
+            height: 40.85px;
+        }
+
+        .gpa-value {
+            font-size: 15.3px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .gpa-label {
+            font-size: 10.2px;
+            font-weight: 700;
+            color: #698276;
+            letter-spacing: 0.26px;
+        }
+
+        .trusted-section {
+            display: flex;
+            align-items: center;
+            gap: 22.27px;
+            padding-top: 22.27px;
+            border-top: 0.52px solid rgba(255, 255, 255, 0.05);
+            margin-top: 22.27px;
+        }
+
+        .trusted-logo {
+            width: 115px;
+            height: 37px;
+        }
+
+        .trusted-stars {
+            width: 176px;
+            height: 13px;
+        }
+
+        .trusted-text {
+            font-size: 13px;
+            color: #69827a;
+            font-weight: 500;
+        }
+
+        .cta-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0;
+            padding: 0;
+            background: transparent;
+            border: 0.52px solid rgba(255, 255, 255, 0.2);
+            border-radius: 100px;
+            margin: 0;
+            font-size: 11.1px;
+            font-weight: 700;
+            color: var(--green-light);
+            letter-spacing: 0.56px;
+            width: 189.25px;
+            height: 23.28px;
+            position: relative;
+        }
+
+        .cta-badge img {
+            position: absolute;
+            top: 6px;
+            left: 12px;
+            width: 11px;
+            height: 11px;
+        }
+
+        .cta-badge-text {
+            position: absolute;
+            top: 5px;
+            left: 30px;
+            width: 147px;
+            height: 15px;
+            line-height: 15px;
+        }
+
+        .cta-title {
+            font-family: 'Satoshi', Helvetica, sans-serif;
+            font-size: 55.7px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            line-height: 61.3px;
+            letter-spacing: -1.15px;
+            width: 474px;
+        }
+
+        .cta-title .highlight {
+            color: var(--green-light);
+        }
+
+        .cta-description {
+            font-size: 16.7px;
+            color: #99aea5;
+            margin: 0;
+            line-height: 27.1px;
+            letter-spacing: -0.41px;
+            width: 489.13px;
+        }
+
+        /* Footer - Matching Onboarding */
+        footer {
+            position: relative;
+            width: 100%;
+            max-width: 1440px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 32px;
+            background: transparent;
+            z-index: 10;
+        }
+
+        .footer-text {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-medium);
+            letter-spacing: 0.28px;
+            line-height: 21px;
+        }
+
+        .footer-links {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .footer-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-medium);
+            letter-spacing: 0.28px;
+            line-height: 21px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: var(--green-primary);
+        }
+
+        .footer-link-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-family: 'Satoshi', Helvetica, sans-serif;
+            font-size: 48px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title .highlight {
+            color: var(--green-light);
+        }
+
+        .section-description {
+            font-size: 20px;
+            color: var(--text-lighter);
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .hero-content,
+            .quiz-preview-section,
+            .study-section {
+                flex-direction: column;
+            }
+
+            .features-grid,
+            .testimonials-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 15px 20px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: 100px 20px 40px;
+            }
+
+            .hero-title {
+                font-size: 40px;
+            }
+
+            .section,
+            .quiz-preview-section,
+            .study-section,
+            .features-section,
+            .testimonials-section,
+            .comparison-section,
+            .cta-section {
+                padding: 60px 20px;
+            }
+
+            .features-grid,
+            .testimonials-grid {
+                grid-template-columns: 1fr;
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 16px;
+                padding: 20px;
+            }
+
+            .footer-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <img src="https://c.animaapp.com/58N6zuL8/img/-group--2@2x.png" alt="PlexyAi Logo">
+                <div class="logo-text">PlexyAI</div>
+            </div>
+            <nav class="nav-links">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#product" class="nav-link">Product</a>
+                <a href="#testimonials" class="nav-link">Testimonials</a>
+            </nav>
+            <a href="login.html" class="get-started-btn" onclick="sessionStorage.setItem('fromLanding', 'true');">Get Started</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="background-image">
+            <img src="https://c.animaapp.com/58N6zuL8/img/background.svg" alt="Background">
+        </div>
+        <div class="hero-content">
+            <div class="hero-left">
+                <div class="badge">
+                    <img src="https://c.animaapp.com/58N6zuL8/img/icon.svg" alt="Icon" style="width: 15px; height: 15px;">
+                    AI-Powered Study Platform
+                </div>
+                <h1 class="hero-title">
+                    Study Smarter,<br>
+                    Not <span class="highlight">Harder</span>
+                </h1>
+                <p class="hero-description">
+                    Transform your study routine with AI-generated quizzes, smart review sheets, and personalized learning tools designed for top-tier students.
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn-primary" onclick="sessionStorage.setItem('fromLanding', 'true'); window.location.href='login.html';">
+                        Start Learning
+                        <img src="https://c.animaapp.com/58N6zuL8/img/icon-2.svg" alt="Arrow" style="width: 19px; height: 19px;">
+                    </button>
+                    <button class="btn-secondary">
+                        <img src="https://c.animaapp.com/58N6zuL8/img/icon-3.svg" alt="Play" style="width: 19px; height: 19px;">
+                        Watch Demo
+                    </button>
+                </div>
+                <div class="hero-features">
+                    <div class="hero-feature">
+                        <img src="https://c.animaapp.com/58N6zuL8/img/icon-5.svg" alt="Check" style="width: 19px; height: 19px;">
+                        3-Day Free Trial
+                    </div>
+                </div>
+            </div>
+            <div class="hero-right">
+                <div class="dashboard-container">
+                    <div class="dashboard-card">
+                        <div class="dashboard-header">
+                            <div class="dashboard-logo">
+                                <img src="https://c.animaapp.com/58N6zuL8/img/-group--1@2x.png" alt="PlexyAI">
+                                <div class="dashboard-logo-text">PlexyAI</div>
+                            </div>
+                            <div class="dashboard-close"></div>
+                        </div>
+                        <div class="dashboard-stats">
+                            <div class="dashboard-stat-card">
+                                <img src="https://c.animaapp.com/58N6zuL8/img/container.svg" alt="Icon" class="dashboard-stat-icon">
+                                <div>
+                                    <div class="dashboard-stat-value">85%</div>
+                                    <div class="dashboard-stat-label">AVG SCORE</div>
+                                </div>
+                            </div>
+                            <div class="dashboard-stat-card">
+                                <img src="https://c.animaapp.com/58N6zuL8/img/container-1.svg" alt="Icon" class="dashboard-stat-icon">
+                                <div>
+                                    <div class="dashboard-stat-value">12</div>
+                                    <div class="dashboard-stat-label">PASSED</div>
+                                </div>
+                            </div>
+                            <div class="dashboard-stat-card">
+                                <img src="https://c.animaapp.com/58N6zuL8/img/container-2.svg" alt="Icon" class="dashboard-stat-icon">
+                                <div>
+                                    <div class="dashboard-stat-value">4.5h</div>
+                                    <div class="dashboard-stat-label">STUDY TIME</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dashboard-quiz-cards">
+                            <div class="dashboard-quiz-card">
+                                <div class="dashboard-quiz-header">
+                                    <img src="https://c.animaapp.com/58N6zuL8/img/icon-6.svg" alt="Icon" style="width: 13px; height: 13px;">
+                                    <div class="dashboard-quiz-subject">Math</div>
+                                    <div class="dashboard-quiz-score">85%</div>
+                                </div>
+                                <div class="dashboard-quiz-topic">Calculus</div>
+                                <div class="dashboard-quiz-footer">
+                                    <div class="dashboard-quiz-attempts">1 ATTEMPTS</div>
+                                    <img src="https://c.animaapp.com/58N6zuL8/img/container-6.svg" alt="Icon" style="width: 16px; height: 16px;">
+                                </div>
+                            </div>
+                            <div class="dashboard-quiz-card">
+                                <div class="dashboard-quiz-header">
+                                    <img src="https://c.animaapp.com/58N6zuL8/img/icon-7.svg" alt="Icon" style="width: 13px; height: 13px;">
+                                    <div class="dashboard-quiz-subject">History</div>
+                                    <div class="dashboard-quiz-score">92%</div>
+                                </div>
+                                <div class="dashboard-quiz-topic">WWII</div>
+                                <div class="dashboard-quiz-footer">
+                                    <div class="dashboard-quiz-attempts">2 ATTEMPTS</div>
+                                    <img src="https://c.animaapp.com/58N6zuL8/img/container-6.svg" alt="Icon" style="width: 16px; height: 16px;">
+                                </div>
+                            </div>
+                            <div class="dashboard-quiz-card">
+                                <div class="dashboard-quiz-header">
+                                    <img src="https://c.animaapp.com/58N6zuL8/img/icon-8.svg" alt="Icon" style="width: 13px; height: 13px;">
+                                    <div class="dashboard-quiz-subject">Science</div>
+                                    <div class="dashboard-quiz-score">78%</div>
+                                </div>
+                                <div class="dashboard-quiz-topic">Chemistry</div>
+                                <div class="dashboard-quiz-footer">
+                                    <div class="dashboard-quiz-attempts">3 ATTEMPTS</div>
+                                    <img src="https://c.animaapp.com/58N6zuL8/img/container-6.svg" alt="Icon" style="width: 16px; height: 16px;">
+                                </div>
+                            </div>
+                            <div class="dashboard-quiz-card">
+                                <div class="dashboard-quiz-header">
+                                    <img src="https://c.animaapp.com/58N6zuL8/img/icon-9.svg" alt="Icon" style="width: 13px; height: 13px;">
+                                    <div class="dashboard-quiz-subject">English</div>
+                                </div>
+                                <div class="dashboard-quiz-topic">Hamlet</div>
+                                <div class="dashboard-quiz-footer">
+                                    <div class="dashboard-quiz-attempts">NOT STARTED</div>
+                                    <img src="https://c.animaapp.com/58N6zuL8/img/container-6.svg" alt="Icon" style="width: 16px; height: 16px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-floating-card grade-boost-card">
+                        <div class="floating-card-content">
+                            <img src="https://c.animaapp.com/58N6zuL8/img/container-7.svg" alt="Icon" class="floating-card-icon">
+                            <div>
+                                <div class="floating-card-value">+15%</div>
+                                <div class="floating-card-label">GRADE BOOST</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-floating-card streak-card">
+                        <div class="floating-card-content">
+                            <img src="https://c.animaapp.com/58N6zuL8/img/container-8.svg" alt="Icon" class="floating-card-icon">
+                            <div>
+                                <div class="floating-card-value" style="font-size: 11.4px;">Streak!</div>
+                                <div class="floating-card-label" style="font-weight: 500;">7 Days</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="stat-item">
+            <img src="https://c.animaapp.com/58N6zuL8/img/container-9.svg" alt="Icon" class="stat-icon">
+            <div class="stat-number">5K</div>
+            <div class="stat-label">ACTIVE STUDENTS</div>
+        </div>
+        <div class="stat-item">
+            <img src="https://c.animaapp.com/58N6zuL8/img/container-10.svg" alt="Icon" class="stat-icon">
+            <div class="stat-number">1k</div>
+            <div class="stat-label">QUIZZES GENERATED</div>
+        </div>
+        <div class="stat-item">
+            <img src="https://c.animaapp.com/58N6zuL8/img/container-11.svg" alt="Icon" class="stat-icon">
+            <div class="stat-number">4.9★</div>
+            <div class="stat-label">USER RATING</div>
+        </div>
+        <div class="stat-item">
+            <img src="https://c.animaapp.com/58N6zuL8/img/container-12.svg" alt="Icon" class="stat-icon">
+            <div class="stat-number">98%</div>
+            <div class="stat-label">SUCCESS RATE</div>
+        </div>
+    </section>
+
+    <!-- Quiz Preview Section -->
+    <section class="quiz-preview-section" id="features">
+        <div class="quiz-preview-left">
+            <div class="quiz-badge">
+                <img src="https://c.animaapp.com/58N6zuL8/img/icon-11.svg" alt="Icon" style="width: 14px; height: 14px;">
+                AI-POWERED
+            </div>
+            <h2 class="section-title" style="text-align: left; margin-bottom: 20px;">
+                Generate Practice <span class="highlight">Quizzes</span> Instantly
+            </h2>
+            <p class="section-description" style="text-align: left; margin-bottom: 40px;">
+                Our AI analyzes your study topic and creates customized quizzes with multiple question types. No more spending hours creating practice materials.
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: flex; align-items: start; gap: 12px;">
+                    <img src="https://c.animaapp.com/58N6zuL8/img/container-14.svg" alt="Check" style="width: 24px; height: 24px;">
+                    <p style="font-size: 16px; color: var(--text-lighter);">Choose from multiple choice, true/false, or short answer</p>
+                </div>
+                <div style="display: flex; align-items: start; gap: 12px;">
+                    <img src="https://c.animaapp.com/58N6zuL8/img/container-15.svg" alt="Check" style="width: 24px; height: 24px;">
+                    <p style="font-size: 16px; color: var(--text-lighter);">Instant feedback with detailed explanations</p>
+                </div>
+                <div style="display: flex; align-items: start; gap: 12px;">
+                    <img src="https://c.animaapp.com/58N6zuL8/img/container-16.svg" alt="Check" style="width: 24px; height: 24px;">
+                    <p style="font-size: 16px; color: var(--text-lighter);">Track your progress over time</p>
+                </div>
+            </div>
+        </div>
+        <div class="quiz-preview-right">
+            <div class="quiz-preview-card">
+                <div class="quiz-header">
+                    <div class="quiz-type">MULTIPLE CHOICE</div>
+                    <div class="quiz-question-number">QUESTION 2 / 3</div>
+                </div>
+                <div class="quiz-body">
+                    <div class="quiz-question">What is the derivative of x²?</div>
+                    <div class="quiz-option">
+                        <div class="quiz-option-letter">A</div>
+                        <div class="quiz-option-text">x</div>
+                    </div>
+                    <div class="quiz-option selected">
+                        <div class="quiz-option-letter">B</div>
+                        <div class="quiz-option-text">2x</div>
+                        <img src="https://c.animaapp.com/58N6zuL8/img/container-13.svg" alt="Check" style="width: 20px; height: 20px;">
+                    </div>
+                    <div class="quiz-option">
+                        <div class="quiz-option-letter">C</div>
+                        <div class="quiz-option-text">2</div>
+                    </div>
+                    <div class="quiz-option">
+                        <div class="quiz-option-letter">D</div>
+                        <div class="quiz-option-text">x²</div>
+                    </div>
+                </div>
+                <div class="quiz-footer">
+                    <button class="quiz-next-btn">
+                        Next Question
+                        <img src="https://c.animaapp.com/58N6zuL8/img/icon-10.svg" alt="Arrow" style="width: 14px; height: 14px;">
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Study Section -->
+    <section class="study-section" id="product">
+        <div class="study-left">
+            <div class="study-badge">
+                <img src="https://c.animaapp.com/58N6zuL8/img/icon-12.svg" alt="Icon" style="width: 14px; height: 14px;">
+                SMART CREATION
+            </div>
+            <h2 class="section-title" style="text-align: left; margin-bottom: 20px;">
+                Just Type What You<br>
+                Need to <span class="highlight">Study</span>
+            </h2>
+            <p class="section-description" style="text-align: left; margin-bottom: 40px;">
+                Type a topic, select a format, and let AI do the rest.
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+                <div style="display: flex; align-items: start; gap: 16px; padding: 16px; background: white; border: 1px solid var(--border-color); border-radius: 4px;">
+                    <img src="https://c.animaapp.com/58N6zuL8/img/container-17.svg" alt="Icon" style="width: 40px; height: 40px;">
+                    <div>
+                        <div style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">Describe Your Topic</div>
+                        <p style="font-size: 14px; color: var(--text-lighter);">Be as specific or broad as you want</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: start; gap: 16px; padding: 16px; background: white; border: 1px solid var(--border-color); border-radius: 4px;">
+                    <img src="https://c.animaapp.com/58N6zuL8/img/container-18.svg" alt="Icon" style="width: 40px; height: 40px;">
+                    <div>
+                        <div style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">Generate & Study</div>
+                        <p style="font-size: 14px; color: var(--text-lighter);">Your materials ready in seconds</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="study-right">
+            <div class="study-card">
+                <div class="study-card-header">
+                    <img src="https://c.animaapp.com/58N6zuL8/img/container-19.svg" alt="Icon" style="width: 41px; height: 41px;">
+                    <div>
+                        <div style="font-size: 17px; font-weight: 700; margin-bottom: 4px;">AI Quiz Creator</div>
+                        <p style="font-size: 12px; color: var(--text-lighter);">Generate a practice test in seconds</p>
+                    </div>
+                </div>
+                <div class="study-card-body">
+                    <div class="study-input-label">What do you want to study?</div>
+                    <textarea class="study-input" placeholder="The Great Gatsby themes and symbolism"></textarea>
+                    <div class="study-input-label" style="margin-top: 20px;">Question Format</div>
+                    <div class="study-format-options">
+                        <div class="study-format-option selected">Multiple Choice</div>
+                        <div class="study-format-option">True / False</div>
+                        <div class="study-format-option">Short Answer</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Grid Section -->
+    <section class="features-section">
+        <div class="features-header">
+            <h2 class="section-title">
+                Everything You <span class="highlight">Need</span>
+            </h2>
+            <p class="section-description">
+                Powerful tools designed to help you learn faster and retain more information.
+            </p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card feature-card-1 feature-card-large">
+                <div class="feature-card-content">
+                    <h3>AI Quiz Generator</h3>
+                    <p>Create custom practice tests in seconds with AI-powered question generation.</p>
+                </div>
+                <img src="https://c.animaapp.com/58N6zuL8/img/container-20.svg" alt="AI Quiz Generator" class="feature-card-icon" style="width: 172px; height: 121px; position: absolute; bottom: 0; right: 0;">
+            </div>
+            <div class="feature-card feature-card-2 feature-card-medium">
+                <div class="feature-card-content">
+                    <h3>Smart Review Sheets</h3>
+                    <p>Comprehensive study guides with organized concepts and key information.</p>
+                </div>
+                <img src="https://c.animaapp.com/58N6zuL8/img/container-21.svg" alt="Smart Review Sheets" class="feature-card-icon" style="width: 138px; height: 103px; position: absolute; bottom: 0; right: 0;">
+            </div>
+            <div class="feature-card feature-card-3 feature-card-medium">
+                <div class="feature-card-content">
+                    <h3>Digital Flashcards</h3>
+                    <p>Spaced repetition flashcard system designed to maximize retention.</p>
+                </div>
+                <img src="https://c.animaapp.com/58N6zuL8/img/container-22.svg" alt="Digital Flashcards" class="feature-card-icon" style="width: 138px; height: 103px; position: absolute; bottom: 0; right: 0;">
+            </div>
+            <div class="feature-card feature-card-4 feature-card-large">
+                <div class="feature-card-content">
+                    <h3>AI Study Assistant</h3>
+                    <p>Get instant help with homework and personalized study strategies.</p>
+                </div>
+                <img src="https://c.animaapp.com/58N6zuL8/img/container-23.svg" alt="AI Study Assistant" class="feature-card-icon" style="width: 172px; height: 121px; position: absolute; bottom: 0; right: 0;">
+            </div>
+            <div class="feature-card feature-card-5 feature-card-medium">
+                <div class="feature-card-content">
+                    <h3>Focus Mode</h3>
+                    <p>Eliminate distractions with Pomodoro timers and ambient sounds.</p>
+                </div>
+                <img src="https://c.animaapp.com/58N6zuL8/img/container-24.svg" alt="Focus Mode" class="feature-card-icon" style="width: 138px; height: 103px; position: absolute; bottom: 0; right: 0;">
+            </div>
+            <div class="feature-card feature-card-6 feature-card-medium">
+                <div class="feature-card-content">
+                    <h3>Smart Scheduling</h3>
+                    <p>Plan study sessions, track assignments, and never miss deadlines.</p>
+                </div>
+                <img src="https://c.animaapp.com/58N6zuL8/img/container-25.svg" alt="Smart Scheduling" class="feature-card-icon" style="width: 138px; height: 103px; position: absolute; bottom: 0; right: 0;">
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials-section" id="testimonials">
+        <h2 class="section-title">Loved by Top Students</h2>
+        <p class="section-description">Join a community of high achievers</p>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <img src="https://c.animaapp.com/58N6zuL8/img/container-38.svg" alt="Quote" class="testimonial-quote">
+                <p class="testimonial-text">"PlexyAI completely transformed my study routine. I went from a 3.2 to a 3.8 GPA in one semester. The AI quizzes adapt to exactly what I need to work on."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=SarahJohnson&backgroundColor=b6e3ff,c0aede,ffd5dc,ffdfbf" alt="Sarah Johnson">
+                    </div>
+                    <div class="testimonial-info">
+                        <h4>Sarah Johnson</h4>
+                        <p>HIGH SCHOOL SENIOR</p>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <img src="https://c.animaapp.com/58N6zuL8/img/container-39.svg" alt="Quote" class="testimonial-quote">
+                <p class="testimonial-text">"I love how PlexyAI keeps me organized and on track. The reminders and progress tracking motivate me to stay focused and improve every day."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=EmilyMartinez&backgroundColor=b6e3ff,c0aede,ffd5dc,ffdfbf" alt="Emily Martinez">
+                    </div>
+                    <div class="testimonial-info">
+                        <h4>Emily Martinez</h4>
+                        <p>GRADUATE STUDENT</p>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <img src="https://c.animaapp.com/58N6zuL8/img/container-40.svg" alt="Quote" class="testimonial-quote">
+                <p class="testimonial-text">"With PlexyAI, I finally feel prepared for my exams. The personalized learning paths have helped me grasp difficult concepts I struggled with before."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=DavidLee&backgroundColor=b6e3ff,c0aede,ffd5dc,ffdfbf" alt="David Lee">
+                    </div>
+                    <div class="testimonial-info">
+                        <h4>David Lee</h4>
+                        <p>COLLEGE FRESHMAN</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <div class="cta-content-inner">
+                <div class="cta-left" style="position: relative; z-index: 1;">
+                <div class="cta-badge">
+                    <img src="https://c.animaapp.com/58N6zuL8/img/icon-13.svg" alt="Icon">
+                    <div class="cta-badge-text">STUDENT SUPERPOWER</div>
+                </div>
+                <h2 class="cta-title">
+                    Unlock your full<br>
+                    <span class="highlight">academic potential</span>
+                </h2>
+                <p class="cta-description">
+                    Stop drowning in assignments. PlexyAI organizes your life and boosts your GPA automatically.
+                </p>
+                <div class="hero-buttons" style="justify-content: flex-start;">
+                    <button class="btn-primary" onclick="sessionStorage.setItem('fromLanding', 'true'); window.location.href='login.html';" style="background: var(--green-light); color: var(--text-dark);">
+                        Start for Free
+                        <img src="https://c.animaapp.com/58N6zuL8/img/icon-14.svg" alt="Arrow" style="width: 15px; height: 15px;">
+                    </button>
+                </div>
+                <div class="trusted-section">
+                    <img src="https://c.animaapp.com/58N6zuL8/img/container-41.svg" alt="Logo" class="trusted-logo">
+                    <div>
+                        <img src="https://c.animaapp.com/58N6zuL8/img/container-42.svg" alt="Stars" class="trusted-stars">
+                        <div class="trusted-text">Trusted by 10,000+ students</div>
+                    </div>
+                </div>
+            </div>
+            <div class="cta-right">
+                <div class="progress-dashboard">
+                    <div class="progress-header">
+                        <div class="progress-dots">
+                            <div class="progress-dot red"></div>
+                            <div class="progress-dot yellow"></div>
+                            <div class="progress-dot green"></div>
+                        </div>
+                        <div class="progress-title-text">Today's Progress</div>
+                    </div>
+                    <div class="progress-items-container">
+                        <div class="progress-item">
+                            <img src="https://c.animaapp.com/58N6zuL8/img/container-43.svg" alt="Icon" class="progress-item-icon">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-main" style="width: 77.32px; margin-left: 0.1px; margin-top: 3.7px;"></div>
+                                <div class="progress-bar-sub" style="width: 38.39px;"></div>
+                            </div>
+                            <div class="progress-percentage">98%</div>
+                        </div>
+                        <div class="progress-item">
+                            <img src="https://c.animaapp.com/58N6zuL8/img/container-44.svg" alt="Icon" class="progress-item-icon">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-main" style="width: 64.64px; margin-left: 0.1px; margin-top: 1.4px;"></div>
+                                <div class="progress-bar-sub" style="width: 51.61px;"></div>
+                            </div>
+                            <div class="progress-percentage">100%</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="gpa-card">
+                    <img src="https://c.animaapp.com/58N6zuL8/img/container-45.svg" alt="Icon" class="gpa-icon">
+                    <div>
+                        <div class="gpa-value">GPA 4.0</div>
+                        <div class="gpa-label">ACHIEVED</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Section -->
+    <section class="comparison-section" id="pricing">
+        <div class="comparison-content">
+            <h2 class="comparison-title">Why Students Choose PlexyAI</h2>
+            <p class="comparison-description">See how we compare to traditional study methods</p>
+            <div class="comparison-table">
+                <div class="comparison-header">
+                    <div class="comparison-header-cell">Feature</div>
+                    <div class="comparison-header-cell">PlexyAI</div>
+                    <div class="comparison-header-cell">Traditional</div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">AI-Powered Quizzes</div>
+                    <div class="comparison-cell"><img src="https://c.animaapp.com/58N6zuL8/img/container-26.svg" alt="Check" class="check-icon"></div>
+                    <div class="comparison-cell"><img src="https://c.animaapp.com/58N6zuL8/img/container-37.svg" alt="X" class="x-icon"></div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Smart Review Sheets</div>
+                    <div class="comparison-cell"><img src="https://c.animaapp.com/58N6zuL8/img/container-28.svg" alt="Check" class="check-icon"></div>
+                    <div class="comparison-cell"><img src="https://c.animaapp.com/58N6zuL8/img/container-37.svg" alt="X" class="x-icon"></div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Spaced Repetition</div>
+                    <div class="comparison-cell"><img src="https://c.animaapp.com/58N6zuL8/img/container-30.svg" alt="Check" class="check-icon"></div>
+                    <div class="comparison-cell"><img src="https://c.animaapp.com/58N6zuL8/img/container-31.svg" alt="X" class="x-icon"></div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">24/7 AI Assistant</div>
+                    <div class="comparison-cell"><img src="https://c.animaapp.com/58N6zuL8/img/container-32.svg" alt="Check" class="check-icon"></div>
+                    <div class="comparison-cell"><img src="https://c.animaapp.com/58N6zuL8/img/container-37.svg" alt="X" class="x-icon"></div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Progress Analytics</div>
+                    <div class="comparison-cell"><img src="https://c.animaapp.com/58N6zuL8/img/container-34.svg" alt="Check" class="check-icon"></div>
+                    <div class="comparison-cell"><img src="https://c.animaapp.com/58N6zuL8/img/container-37.svg" alt="X" class="x-icon"></div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Focus Mode Tools</div>
+                    <div class="comparison-cell"><img src="https://c.animaapp.com/58N6zuL8/img/container-36.svg" alt="Check" class="check-icon"></div>
+                    <div class="comparison-cell"><img src="https://c.animaapp.com/58N6zuL8/img/container-37.svg" alt="X" class="x-icon"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p class="footer-text">© 2025 PlexyAI. All rights reserved.</p>
+        <div class="footer-links">
+            <a href="#" class="footer-link" onclick="event.preventDefault(); alert('Privacy policy coming soon!');">
+                <svg class="footer-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-width="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke-width="2"/>
+                </svg>
+                Privacy
+            </a>
+            <a href="#" class="footer-link" onclick="event.preventDefault(); alert('Terms of service coming soon!');">
+                <svg class="footer-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke-width="2"/>
+                    <polyline points="14 2 14 8 20 8" stroke-width="2"/>
+                </svg>
+                Terms
+            </a>
+            <a href="#" class="footer-link" onclick="event.preventDefault(); alert('Help center coming soon!');">
+                <svg class="footer-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" stroke-width="2"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17" stroke-width="2"/>
+                </svg>
+                Get help
+            </a>
+        </div>
+    </footer>
+    <script>
+        // Check if user is already logged in - if so, redirect to dashboard
+        window.addEventListener('DOMContentLoaded', function() {
+            const currentUser = sessionStorage.getItem('currentUser');
+            const rememberedUser = localStorage.getItem('rememberedUser');
+
+            if (currentUser || rememberedUser) {
+                // User is already logged in, redirect to dashboard
+                window.location.href = 'dashboard.html';
+            }
+        });
+    </script>
+</body>
+</html>

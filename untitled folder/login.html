@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - PlexyAi</title>
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Inter:wght@500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --green-primary: #5ad567;
+            --green-secondary: #2c7e35;
+            --text-dark: #031504;
+            --text-medium: #3d483e;
+            --border-color: #d6ded7;
+            --error-red: #df1c41;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter Tight', Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, rgba(175, 237, 181, 0.3) 0%, rgba(90, 213, 103, 0.1) 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Background pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(90, 213, 103, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(44, 126, 53, 0.1) 0%, transparent 50%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Background image */
+        .background-image {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 1440px;
+            height: 839px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .background-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 1440px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 32px 40px;
+            background: transparent;
+            z-index: 10;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .logo-text {
+            font-family: 'Aeonik-Medium', 'Inter Tight', Helvetica, sans-serif;
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--text-dark);
+            letter-spacing: 0;
+            line-height: 31.2px;
+        }
+
+        /* Main container */
+        .main-container {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 120px 20px 100px;
+            z-index: 1;
+        }
+
+        /* Login card - Glassmorphism */
+        .login-card {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid var(--border-color);
+            border-radius: 9px;
+            box-shadow: 0px 4px 50px rgba(0, 0, 0, 0.05);
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        /* User icon section */
+        .user-icon-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-icon-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            border-radius: 96px;
+            background: linear-gradient(180deg, rgba(175, 237, 181, 0.48) 0%, rgba(175, 237, 181, 0) 100%);
+            border: 1px solid rgba(235, 248, 230, 0.5);
+        }
+
+        .user-icon-inner {
+            width: 48px;
+            height: 48px;
+            background: var(--white);
+            border: 1px solid var(--green-primary);
+            border-radius: 96px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0px 2px 4px rgba(179, 212, 253, 0.04);
+        }
+
+        .user-icon {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .welcome-text {
+            text-align: center;
+        }
+
+        .welcome-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-dark);
+            letter-spacing: 0;
+            line-height: 31.2px;
+            margin-bottom: 8px;
+        }
+
+        .welcome-subtitle {
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-medium);
+            letter-spacing: 0.32px;
+            line-height: 24px;
+        }
+
+        /* Form elements */
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-medium);
+            letter-spacing: 0.28px;
+            line-height: 21px;
+        }
+
+        .form-label .required {
+            color: var(--error-red);
+        }
+
+        .form-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            height: 52px;
+            padding: 8px 12px;
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            z-index: 1;
+        }
+
+        .form-input-wrapper:focus-within {
+            border-color: var(--green-primary);
+            outline: 2px solid rgba(90, 213, 103, 0.2);
+            outline-offset: -2px;
+        }
+
+        .form-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-dark);
+            letter-spacing: 0.32px;
+            line-height: 24px;
+            outline: none;
+            padding: 0;
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        .form-input::placeholder {
+            color: #999;
+        }
+
+        .eye-icon {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+            object-fit: contain;
+            pointer-events: auto;
+            z-index: 20;
+            position: relative;
+        }
+
+        .eye-icon:hover {
+            opacity: 1;
+        }
+
+        /* Checkbox and forgot password */
+        .form-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox {
+            width: 16px;
+            height: 16px;
+            border: 0.8px solid var(--border-color);
+            border-radius: 4.8px;
+            background: var(--white);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+            pointer-events: auto;
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        .checkbox.checked {
+            background: var(--green-primary);
+            border-color: var(--green-primary);
+        }
+
+        .checkbox.checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .checkbox-label {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-dark);
+            letter-spacing: 0.28px;
+            line-height: 21px;
+            cursor: pointer;
+            pointer-events: auto;
+            user-select: none;
+        }
+
+        .forgot-password {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--green-secondary);
+            letter-spacing: 0.28px;
+            line-height: 21px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .forgot-password:hover {
+            color: var(--green-primary);
+        }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+        }
+
+        .divider-text {
+            font-family: 'Inter', Helvetica, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-medium);
+            letter-spacing: -0.084px;
+            line-height: 20px;
+        }
+
+        /* Social login */
+        .social-login {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 0;
+        }
+
+        .social-button {
+            width: 100%;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 14px;
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', Helvetica, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-dark);
+            letter-spacing: -0.084px;
+            line-height: 20px;
+        }
+
+        .social-button:hover {
+            background: #f8f9fa;
+            border-color: var(--green-primary);
+        }
+
+        .social-icon {
+            width: 18px;
+            height: 18px;
+            object-fit: contain;
+        }
+
+        /* Login button */
+        .login-button {
+            width: 100%;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border: 3px solid var(--green-primary);
+            border-radius: 5px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 100%),
+                        linear-gradient(0deg, var(--green-primary) 0%, var(--green-primary) 100%);
+            box-shadow: 0px 1px 2px rgba(13, 13, 18, 0.06);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--white);
+            letter-spacing: 0.32px;
+            line-height: 24px;
+            margin-top: 0;
+        }
+
+        /* Add spacing between social login and login button */
+        .social-login {
+            margin-top: 0;
+        }
+
+        .social-login + .login-button {
+            margin-top: 16px;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0px 4px 12px rgba(90, 213, 103, 0.3);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        /* Register link */
+        .register-link {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-medium);
+            letter-spacing: 0.32px;
+            line-height: 24px;
+        }
+
+        .register-link a {
+            font-weight: 500;
+            color: var(--green-secondary);
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+            position: relative;
+            z-index: 100;
+            pointer-events: auto;
+            display: inline-block;
+        }
+
+        .register-link a:hover {
+            color: var(--green-primary);
+        }
+
+        /* Error message */
+        .error-message {
+            color: var(--error-red);
+            font-size: 14px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        /* Footer */
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 1440px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 32px;
+            background: transparent;
+            z-index: 10;
+        }
+
+        .footer-text {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-medium);
+            letter-spacing: 0.28px;
+            line-height: 21px;
+        }
+
+        .footer-links {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .footer-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-medium);
+            letter-spacing: 0.28px;
+            line-height: 21px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: var(--green-primary);
+        }
+
+        .footer-link-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+
+        /* Page Transition Animations */
+        body {
+            animation: fadeIn 0.4s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .page-transition {
+            animation: fadeOut 0.3s ease-out forwards;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                padding: 20px;
+            }
+
+            .login-card {
+                padding: 24px;
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 16px;
+                padding: 20px;
+            }
+
+            .footer-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Image -->
+    <div class="background-image">
+        <img src="https://c.animaapp.com/ebnoE1yJ/img/background.svg" alt="Background">
+    </div>
+
+    <!-- Header -->
+    <header>
+            <div class="logo-container">
+            <img src="https://c.animaapp.com/JcKCNFZH/img/-group-@2x.png" alt="PlexyAi Logo" class="logo-icon">
+            <div class="logo-text">PlexyAi</div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Login Card -->
+        <div class="login-card">
+            <!-- User Icon Section -->
+            <div class="user-icon-section">
+                <div class="user-icon-wrapper">
+                    <div class="user-icon-inner">
+                        <img src="https://c.animaapp.com/JcKCNFZH/img/user-icon.svg" alt="User" class="user-icon">
+                    </div>
+                </div>
+                <div class="welcome-text">
+                    <h1 class="welcome-title">Welcome Back</h1>
+                    <p class="welcome-subtitle">Glad to see you again. Log in to your account.</p>
+                </div>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="login-form" onsubmit="return false;">
+                <div class="form-section">
+                    <!-- Email Field -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            Email Address <span class="required">*</span>
+                        </label>
+                        <div class="form-input-wrapper">
+                            <input 
+                                type="email" 
+                                id="loginEmail" 
+                                class="form-input" 
+                                placeholder="Enter your email" 
+                                required
+                            />
+                        </div>
+                        <div class="error-message" id="loginEmailError"></div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            Password <span class="required">*</span>
+                        </label>
+                        <div class="form-input-wrapper">
+                            <input 
+                                type="password" 
+                                id="loginPassword" 
+                                class="form-input" 
+                                placeholder="Enter your password" 
+                                required
+                            />
+                            <img src="https://c.animaapp.com/JcKCNFZH/img/icon-4.svg" alt="Toggle password" class="eye-icon" onclick="togglePasswordVisibility('loginPassword')">
+                        </div>
+                        <div class="error-message" id="loginPasswordError"></div>
+                    </div>
+
+                    <!-- Options -->
+                    <div class="form-options">
+                        <div class="checkbox-wrapper">
+                            <div class="checkbox" id="rememberCheckbox" onclick="toggleCheckbox('rememberCheckbox')"></div>
+                            <label class="checkbox-label" for="rememberCheckbox" onclick="toggleCheckbox('rememberCheckbox')">Keep me logged in</label>
+                        </div>
+                        <a href="#" class="forgot-password" onclick="event.preventDefault(); alert('Forgot password functionality coming soon!');">Forgot Password?</a>
+                    </div>
+                </div>
+
+                <!-- Login Button -->
+                <button type="submit" class="login-button">Login</button>
+            </form>
+
+            <!-- Register Link -->
+            <p class="register-link">
+                Don't have an account? <a href="onboarding/onboarding-step1.html" id="registerLink" onclick="handleRegister(event);">Register</a>
+            </p>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p class="footer-text">© 2025 PlexyAI. All right reserved.</p>
+        <div class="footer-links">
+            <a href="#" class="footer-link" onclick="event.preventDefault(); alert('Privacy policy coming soon!');">
+                <svg class="footer-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-width="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke-width="2"/>
+                </svg>
+                Privacy
+            </a>
+            <a href="#" class="footer-link" onclick="event.preventDefault(); alert('Terms of service coming soon!');">
+                <svg class="footer-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke-width="2"/>
+                    <polyline points="14 2 14 8 20 8" stroke-width="2"/>
+                </svg>
+                Terms
+            </a>
+            <a href="#" class="footer-link" onclick="event.preventDefault(); alert('Help center coming soon!');">
+                <svg class="footer-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" stroke-width="2"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17" stroke-width="2"/>
+                </svg>
+                Get help
+            </a>
+        </div>
+    </footer>
+
+    <!-- Google Auth Utilities -->
+    <script src="google_auth_utils.js"></script>
+    
+    <script>
+        // Wrap in IIFE to avoid variable conflicts
+        (function() {
+            'use strict';
+            
+            // Initialize Supabase - wait for library to load
+            let supabaseClient;
+            const supabaseUrl = 'https://zjtnptmbyaffsqrikrzi.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqdG5wdG1ieWFmZnNxcmlrcnppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3MzI1OTksImV4cCI6MjA4MzMwODU5OX0.W9ihNjtBJDPmXkxtDS0ZXiE6EVQvh3WgZDq8PYKi15c';
+            
+            // Initialize Supabase when library is ready
+            function initSupabase() {
+                if (window.supabase) {
+                    supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+                    console.log('Supabase initialized');
+                } else {
+                    console.error('Supabase library not loaded');
+                }
+            }
+            
+            // Try to initialize immediately
+            if (window.supabase) {
+                initSupabase();
+            } else {
+                // Wait for library to load
+                window.addEventListener('load', initSupabase);
+            }
+            
+            // Make supabaseClient available globally
+            window.getSupabaseClient = function() {
+                return supabaseClient;
+            };
+
+            // Toggle password visibility
+            window.togglePasswordVisibility = function(inputId) {
+                const input = document.getElementById(inputId);
+                if (!input) {
+                    console.error('Input not found:', inputId);
+                    return;
+                }
+                if (input.type === 'password') {
+                    input.type = 'text';
+                } else {
+                    input.type = 'password';
+                }
+            };
+
+            // Toggle checkbox
+            window.toggleCheckbox = function(checkboxId) {
+                const checkbox = document.getElementById(checkboxId);
+                if (!checkbox) {
+                    console.error('Checkbox not found:', checkboxId);
+                    return;
+                }
+                checkbox.classList.toggle('checked');
+                console.log('Checkbox toggled:', checkbox.classList.contains('checked'));
+            };
+
+        // Show error message
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.classList.add('show');
+        }
+
+        // Hide error message
+        function hideError(elementId) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.classList.remove('show');
+        }
+
+        // Validate email format
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        // Sync Google Classroom data to Supabase
+        async function syncGoogleClassroomData(userId, accessToken, supabaseParam) {
+            if (!accessToken || !supabaseParam) {
+                console.log('No Google access token available');
+                return;
+            }
+            
+            try {
+                // Use fetchWithGoogleAuth for automatic token refresh
+                const fetchWithAuth = window.googleAuthUtils && window.googleAuthUtils.fetchWithGoogleAuth 
+                    ? (url, options) => window.googleAuthUtils.fetchWithGoogleAuth(url, options, supabaseParam)
+                    : async (url, options) => {
+                        return fetch(url, {
+                            ...options,
+                            headers: {
+                                'Authorization': `Bearer ${accessToken}`,
+                                ...(options.headers || {})
+                            }
+                        });
+                    };
+                
+                // Fetch user's classes from Google Classroom API
+                const coursesResponse = await fetchWithAuth(
+                    'https://classroom.googleapis.com/v1/courses?studentId=me',
+                    {},
+                    supabaseParam
+                );
+                
+                if (!coursesResponse.ok) {
+                    console.error('Failed to fetch courses:', coursesResponse.statusText);
+                    return;
+                }
+                
+                const coursesData = await coursesResponse.json();
+                const courses = coursesData.courses || [];
+                
+                // Save classes to Supabase
+                for (const course of courses) {
+                    // Upsert class
+                    const { error: classError } = await supabaseParam
+                        .from('classes')
+                        .upsert({
+                            owner_id: userId,
+                            google_class_id: course.id,
+                            name: course.name || 'Untitled Class',
+                            description: course.description || null,
+                            section: course.section || null,
+                            room: course.room || null,
+                            enrollment_code: course.enrollmentCode || null
+                        }, {
+                            onConflict: 'google_class_id'
+                        });
+                    
+                    if (classError) {
+                        console.error('Error saving class:', classError);
+                        continue;
+                    }
+                    
+                    // Fetch assignments for this class
+                    try {
+                        const assignmentsResponse = await fetchWithAuth(
+                            `https://classroom.googleapis.com/v1/courses/${course.id}/courseWork?studentId=me`,
+                            {},
+                            supabase
+                        );
+                        
+                        if (assignmentsResponse.ok) {
+                            const assignmentsData = await assignmentsResponse.json();
+                            const courseWork = assignmentsData.courseWork || [];
+                            
+                            // Get the class record to get the local ID
+                            const { data: classRecord } = await supabaseParam
+                                .from('classes')
+                                .select('id')
+                                .eq('google_class_id', course.id)
+                                .eq('owner_id', userId)
+                                .single();
+                            
+                            if (classRecord) {
+                                // Save assignments
+                                for (const work of courseWork) {
+                                    const { error: assignmentError } = await supabaseParam
+                                        .from('assignments')
+                                        .upsert({
+                                            class_id: classRecord.id,
+                                            owner_id: userId,
+                                            google_assignment_id: work.id,
+                                            title: work.title || 'Untitled Assignment',
+                                            description: work.description || null,
+                                            due_date: work.dueDate ? new Date(
+                                                work.dueDate.year,
+                                                work.dueDate.month - 1,
+                                                work.dueDate.day,
+                                                work.dueTime?.hours || 0,
+                                                work.dueTime?.minutes || 0
+                                            ).toISOString() : null,
+                                            max_points: work.maxPoints || null,
+                                            state: work.state || 'PUBLISHED'
+                                        }, {
+                                            onConflict: 'google_assignment_id'
+                                        });
+                                    
+                                    if (assignmentError) {
+                                        console.error('Error saving assignment:', assignmentError);
+                                        continue;
+                                    }
+                                    
+                                    // Fetch submissions for this assignment
+                                    try {
+                                        const submissionsResponse = await fetchWithAuth(
+                                            `https://classroom.googleapis.com/v1/courses/${course.id}/courseWork/${work.id}/studentSubmissions?studentId=me`,
+                                            {},
+                                            supabase
+                                        );
+                                        
+                                        if (submissionsResponse.ok) {
+                                            const submissionsData = await submissionsResponse.json();
+                                            const submissions = submissionsData.studentSubmissions || [];
+                                            
+                                            // Get the assignment record to get the local ID
+                                            const { data: assignmentRecord } = await supabaseParam
+                                                .from('assignments')
+                                                .select('id')
+                                                .eq('google_assignment_id', work.id)
+                                                .eq('owner_id', userId)
+                                                .single();
+                                            
+                                            if (assignmentRecord) {
+                                                // Save submissions
+                                                for (const submission of submissions) {
+                                                    await supabaseParam
+                                                        .from('submissions')
+                                                        .upsert({
+                                                            assignment_id: assignmentRecord.id,
+                                                            owner_id: userId,
+                                                            google_submission_id: submission.id,
+                                                            state: submission.state || 'NEW',
+                                                            assigned_grade: submission.assignedGrade || null,
+                                                            draft_grade: submission.draftGrade || null
+                                                        }, {
+                                                            onConflict: 'google_submission_id'
+                                                        });
+                                                }
+                                            }
+                                        }
+                                    } catch (submissionError) {
+                                        console.error('Error fetching submissions:', submissionError);
+                                    }
+                                }
+                            }
+                        }
+                    } catch (assignmentError) {
+                        console.error('Error fetching assignments:', assignmentError);
+                    }
+                }
+                
+                console.log('Google Classroom data synced successfully');
+            } catch (error) {
+                console.error('Error syncing Google Classroom data:', error);
+            }
+        }
+
+        // Store Google token securely in Supabase database via edge function
+        async function storeGoogleTokenInDatabase(session, supabase) {
+            try {
+                const { data: { session: currentSession } } = await supabase.auth.getSession();
+                if (!currentSession) {
+                    console.error('No session for storing token');
+                    return;
+                }
+
+                const response = await fetch('https://zjtnptmbyaffsqrikrzi.supabase.co/functions/v1/google-token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentSession.access_token}`
+                    },
+                    body: JSON.stringify({
+                        action: 'store',
+                        refresh_token: session.provider_refresh_token,
+                        access_token: session.provider_token,
+                        expires_in: 3600, // Google access tokens typically expire in 1 hour
+                        scope: 'openid email profile https://www.googleapis.com/auth/classroom.courses.readonly https://www.googleapis.com/auth/classroom.coursework.me.readonly https://www.googleapis.com/auth/drive.readonly'
+                    })
+                });
+
+                if (response.ok) {
+                    console.log('Google token stored securely in database');
+                } else {
+                    const error = await response.json();
+                    console.error('Failed to store Google token:', error);
+                }
+            } catch (error) {
+                console.error('Error storing Google token in database:', error);
+            }
+        }
+
+        // Clean email/password login function
+        async function loginWithEmail(email, password) {
+            const supabase = window.getSupabaseClient();
+            
+            if (!supabase) {
+                showError('loginPasswordError', 'Supabase not initialized. Please refresh the page.');
+                return false;
+            }
+            
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+            
+            if (error) {
+                console.error('Login error:', error.message);
+                showError('loginPasswordError', error.message);
+                return false;
+            }
+            
+            console.log('Logged in:', data.user);
+            
+            // Get user profile (if exists)
+            let userProfile = null;
+            try {
+                const { data: profileData } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', data.user.id)
+                    .single();
+                userProfile = profileData;
+            } catch (e) {
+                // Profile might not exist yet - that's okay
+                console.log('No profile found yet');
+            }
+            
+            // Store Google tokens securely in database (if available from Google OAuth login)
+            if (data.session?.provider_token && data.session?.provider_refresh_token) {
+                // Store refresh token in database via edge function
+                storeGoogleTokenInDatabase(data.session, supabase);
+
+                // Sync Google Classroom data (async, don't wait)
+                syncGoogleClassroomData(data.user.id, data.session.provider_token, supabase);
+            }
+            
+            // Create session data
+            const sessionData = {
+                id: data.user.id,
+                email: data.user.email,
+                name: userProfile?.full_name || data.user.user_metadata?.full_name || data.user.email,
+                loginTime: new Date().toISOString()
+            };
+            
+            // Store session
+            sessionStorage.setItem('currentUser', JSON.stringify(sessionData));
+            sessionStorage.setItem('supabaseSession', JSON.stringify(data.session));
+            
+            // Remember me functionality
+            const rememberMe = document.getElementById('rememberCheckbox')?.classList.contains('checked');
+            if (rememberMe) {
+                const expirationDate = new Date();
+                expirationDate.setDate(expirationDate.getDate() + 30);
+                localStorage.setItem('rememberedUser', JSON.stringify({
+                    ...sessionData,
+                    expirationDate: expirationDate.toISOString(),
+                    supabaseSession: data.session
+                }));
+            } else {
+                localStorage.removeItem('rememberedUser');
+            }
+            
+            // Redirect to dashboard
+            transitionToPage('dashboard.html');
+            return true;
+        }
+        
+        // Handle login form submission
+        async function handleLogin(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            // Clear previous errors
+            hideError('loginEmailError');
+            hideError('loginPasswordError');
+            
+            const emailInput = document.getElementById('loginEmail');
+            const passwordInput = document.getElementById('loginPassword');
+            
+            if (!emailInput || !passwordInput) {
+                alert('Form inputs not found. Please refresh the page.');
+                return false;
+            }
+            
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            
+            // Basic validation
+            if (!email) {
+                showError('loginEmailError', 'Email is required');
+                return false;
+            }
+            
+            if (!validateEmail(email)) {
+                showError('loginEmailError', 'Please enter a valid email address');
+                return false;
+            }
+            
+            if (!password) {
+                showError('loginPasswordError', 'Password is required');
+                return false;
+            }
+            
+            // Call clean login function
+            return await loginWithEmail(email, password);
+        }
+        
+        // Google login function (clean)
+        async function loginWithGoogle() {
+            const supabase = window.getSupabaseClient();
+            
+            if (!supabase) {
+                alert('Supabase not initialized. Please refresh the page.');
+                return;
+            }
+            
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin + '/login.html',
+                    scopes: 'openid email profile https://www.googleapis.com/auth/classroom.courses.readonly https://www.googleapis.com/auth/classroom.coursework.me.readonly https://www.googleapis.com/auth/drive.readonly'
+                }
+            });
+            
+            if (error) {
+                console.error('Google login error:', error.message);
+                alert(error.message);
+            }
+            // OAuth will redirect - page will reload after Google auth
+        }
+        
+        // Check for OAuth callback after page load (only if URL has OAuth parameters)
+        async function checkOAuthCallback() {
+            const supabase = window.getSupabaseClient();
+            if (!supabase) return;
+            
+            // Only check for OAuth callback if URL has OAuth parameters (code, access_token, etc.)
+            const urlParams = new URLSearchParams(window.location.search);
+            const hasOAuthParams = urlParams.has('code') || urlParams.has('access_token') || urlParams.has('error');
+            
+            if (!hasOAuthParams) {
+                // Not an OAuth callback - don't do anything
+                return;
+            }
+            
+            // This is an OAuth callback - check if we have a session
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (session && session.user) {
+                console.log('OAuth login successful:', session.user.email);
+                
+                // Get user profile
+                let userProfile = null;
+                try {
+                    const { data: profileData } = await supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', session.user.id)
+                        .single();
+                    userProfile = profileData;
+                } catch (e) {
+                    // Profile might not exist yet
+                }
+                
+                // Store Google tokens securely in database
+                if (session.provider_token && session.provider_refresh_token) {
+                    // Store refresh token in database via edge function
+                    storeGoogleTokenInDatabase(session, supabase);
+
+                    // Sync Google Classroom data
+                    syncGoogleClassroomData(session.user.id, session.provider_token, supabase);
+                }
+                
+                // Create session data
+                const sessionData = {
+                    id: session.user.id,
+                    email: session.user.email,
+                    name: userProfile?.full_name || session.user.user_metadata?.full_name || session.user.email,
+                    loginTime: new Date().toISOString()
+                };
+                
+                // Store session
+                sessionStorage.setItem('currentUser', JSON.stringify(sessionData));
+                sessionStorage.setItem('supabaseSession', JSON.stringify(session));
+                
+                // Clean up URL parameters
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                // Redirect to dashboard
+                transitionToPage('dashboard.html');
+            }
+        }
+        
+        // Make functions globally accessible
+        window.handleLogin = handleLogin;
+        window.loginWithGoogle = loginWithGoogle;
+
+        // Check if remembered user session is still valid (not expired)
+        function isRememberedUserValid() {
+            const rememberedUserStr = localStorage.getItem('rememberedUser');
+            if (!rememberedUserStr) {
+                return false;
+            }
+            
+            try {
+                const rememberedUser = JSON.parse(rememberedUserStr);
+                
+                // Check if expiration date exists
+                if (!rememberedUser.expirationDate) {
+                    // Old format without expiration - treat as expired for security
+                    localStorage.removeItem('rememberedUser');
+                    return false;
+                }
+                
+                // Check if expiration date has passed
+                const expirationDate = new Date(rememberedUser.expirationDate);
+                const now = new Date();
+                
+                if (now > expirationDate) {
+                    // Session expired, remove it
+                    localStorage.removeItem('rememberedUser');
+                    return false;
+                }
+                
+                return true;
+            } catch (e) {
+                // Invalid data, remove it
+                localStorage.removeItem('rememberedUser');
+                return false;
+            }
+        }
+
+        // Get valid remembered user or restore session
+        async function getValidRememberedUser() {
+            if (!isRememberedUserValid()) {
+                return null;
+            }
+            
+            const rememberedUserStr = localStorage.getItem('rememberedUser');
+            if (!rememberedUserStr) {
+                return null;
+            }
+            
+            try {
+                const rememberedUser = JSON.parse(rememberedUserStr);
+                
+                // Restore Supabase session if available
+                const supabase = window.getSupabaseClient();
+                if (rememberedUser.supabaseSession && supabase) {
+                    const { data: { session }, error } = await supabase.auth.setSession(rememberedUser.supabaseSession);
+                    
+                    if (error || !session) {
+                        // Session invalid, remove remembered user
+                        localStorage.removeItem('rememberedUser');
+                        return null;
+                    }
+                    
+                    // Get updated user profile
+                    const { data: userProfile } = await supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', session.user.id)
+                        .single();
+                    
+                    const loginTime = new Date().toISOString();
+                    const sessionData = {
+                        id: session.user.id,
+                        email: session.user.email,
+                        name: userProfile?.full_name || rememberedUser.name || session.user.email,
+                        loginTime: loginTime
+                    };
+                    
+                    // Restore to sessionStorage
+                    sessionStorage.setItem('currentUser', JSON.stringify(sessionData));
+                    sessionStorage.setItem('supabaseSession', JSON.stringify(session));
+                    
+                    return sessionData;
+                } else {
+                    // Fallback to old format
+                    const sessionData = {
+                        email: rememberedUser.email,
+                        name: rememberedUser.name,
+                        loginTime: rememberedUser.loginTime
+                    };
+                    
+                    sessionStorage.setItem('currentUser', JSON.stringify(sessionData));
+                    return sessionData;
+                }
+            } catch (e) {
+                console.error('Error restoring session:', e);
+                localStorage.removeItem('rememberedUser');
+                return null;
+            }
+        }
+
+        // Handle register link click - create account first, then go to onboarding
+        async function handleRegister(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Prompt user for email and password to create account
+            const email = prompt('Enter your email address:');
+            if (!email) return;
+            
+            if (!email.includes('@') || !email.includes('.')) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+            
+            const password = prompt('Enter a password (min 6 characters):');
+            if (!password || password.length < 6) {
+                alert('Password must be at least 6 characters long.');
+                return;
+            }
+            
+            const supabase = window.getSupabaseClient();
+            if (!supabase) {
+                alert('Supabase not initialized. Please refresh the page.');
+                return;
+            }
+            
+            // Create account (call signUp ONCE - no retries, no loops)
+            const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+                email: email,
+                password: password
+            });
+            
+            if (signUpError) {
+                console.error('Signup error:', signUpError.message);
+                
+                // If account already exists, try to sign in
+                if (signUpError.message.includes('already registered') || 
+                    signUpError.message.includes('already exists') ||
+                    signUpError.message.includes('User already registered')) {
+                    
+                    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                        email: email,
+                        password: password
+                    });
+                    
+                    if (signInError) {
+                        alert('Account exists but password is incorrect. Please use the login form instead.');
+                        return;
+                    }
+                    
+                    // Signed in successfully - go to onboarding
+                    sessionStorage.setItem('onboardingEmail', email);
+                    sessionStorage.setItem('currentUser', JSON.stringify({
+                        id: signInData.user.id,
+                        email: email,
+                        name: email
+                    }));
+                    if (signInData.session) {
+                        sessionStorage.setItem('supabaseSession', JSON.stringify(signInData.session));
+                    }
+                    transitionToPage('onboarding/onboarding-step1.html');
+                    return;
+                }
+                
+                // Other errors - show message and stop (no retries)
+                alert('Failed to create account: ' + signUpError.message);
+                return;
+            }
+            
+            if (!signUpData || !signUpData.user) {
+                alert('Account creation failed. Please try again.');
+                return;
+            }
+            
+            // Account created successfully
+            console.log('Account created:', signUpData.user.id);
+            
+            // Store email for onboarding
+            sessionStorage.setItem('onboardingEmail', email);
+            sessionStorage.setItem('onboardingPassword', password);
+            
+            // Store session if available (email confirmation might be off)
+            if (signUpData.session) {
+                sessionStorage.setItem('supabaseSession', JSON.stringify(signUpData.session));
+                sessionStorage.setItem('currentUser', JSON.stringify({
+                    id: signUpData.user.id,
+                    email: email,
+                    name: email
+                }));
+            } else {
+                // Email confirmation required
+                alert('Account created! Please check your email to verify your account.');
+            }
+            
+            transitionToPage('onboarding/onboarding-step1.html');
+        }
+
+        // Page transition function
+        function transitionToPage(url) {
+            document.body.classList.add('page-transition');
+            setTimeout(function() {
+                window.location.href = url;
+            }, 300);
+        }
+
+        // Override window.location.href for smooth transitions
+        const originalLocationHref = window.location.href;
+        window.addEventListener('beforeunload', function() {
+            document.body.classList.add('page-transition');
+        });
+
+        // Add event listener when DOM is ready
+        window.addEventListener('DOMContentLoaded', async function() {
+            console.log('DOM loaded, setting up login form');
+            
+            // Initialize Supabase if not already done
+            let supabase = window.getSupabaseClient();
+            if (!supabase && window.supabase) {
+                initSupabase();
+                supabase = window.getSupabaseClient();
+            }
+            
+            // Ensure inputs are accessible and not blocked
+            const emailInput = document.getElementById('loginEmail');
+            const passwordInput = document.getElementById('loginPassword');
+            
+            if (emailInput) {
+                emailInput.removeAttribute('readonly');
+                emailInput.removeAttribute('disabled');
+                emailInput.style.pointerEvents = 'auto';
+                emailInput.style.zIndex = '10';
+                emailInput.setAttribute('autocomplete', 'email');
+                console.log('Email input ready and accessible');
+            } else {
+                console.error('Email input not found!');
+            }
+            
+            if (passwordInput) {
+                passwordInput.removeAttribute('readonly');
+                passwordInput.removeAttribute('disabled');
+                passwordInput.style.pointerEvents = 'auto';
+                passwordInput.style.zIndex = '10';
+                passwordInput.setAttribute('autocomplete', 'current-password');
+                console.log('Password input ready and accessible');
+            } else {
+                console.error('Password input not found!');
+            }
+            
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                console.log('Login form found, adding event listener');
+                loginForm.addEventListener('submit', function(e) {
+                    console.log('Form submit event triggered');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleLogin(e);
+                    return false;
+                });
+                
+                // Also add click handler to button as backup
+                const loginButton = loginForm.querySelector('button[type="submit"]');
+                if (loginButton) {
+                    loginButton.addEventListener('click', function(e) {
+                        console.log('Login button clicked');
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleLogin(e);
+                        return false;
+                    });
+                }
+            } else {
+                console.error('Login form not found!');
+            }
+            
+            const fromLanding = sessionStorage.getItem('fromLanding');
+            
+            // Check if user explicitly wants to see login (e.g., logout or ?showLogin=true)
+            const urlParams = new URLSearchParams(window.location.search);
+            const forceShowLogin = urlParams.has('showLogin') || urlParams.has('logout');
+            
+            if (forceShowLogin) {
+                // User explicitly wants to see login page - clear session and show login
+                console.log('Forcing login page display - clearing all sessions');
+                if (supabase) {
+                    try {
+                        await supabase.auth.signOut();
+                        console.log('Supabase signOut completed');
+                    } catch (e) {
+                        console.error('Error signing out:', e);
+                    }
+                }
+                // Clear all session data
+                sessionStorage.clear();
+                localStorage.removeItem('rememberedUser');
+                // Also clear Supabase's internal storage (try multiple possible keys)
+                const supabaseStorageKey = 'sb-' + window.supabaseUrl.split('//')[1].split('.')[0] + '-auth-token';
+                if (localStorage.getItem(supabaseStorageKey)) {
+                    localStorage.removeItem(supabaseStorageKey);
+                }
+                // Clear all Supabase-related localStorage items
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('sb-') || key.includes('supabase')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                // Don't redirect - show login form
+                console.log('Login page should now be visible');
+            } else {
+                // Check Supabase session (clean way - verify actual session, not just sessionStorage)
+                let hasValidSession = false;
+                if (supabase) {
+                    try {
+                        const { data: { session }, error } = await supabase.auth.getSession();
+                        console.log('Session check result:', { hasSession: !!session, hasUser: !!session?.user, error });
+                        
+                        if (session && session.user) {
+                            // Valid Supabase session exists - TEMPORARILY DISABLED REDIRECT FOR TESTING
+                            // Uncomment below to re-enable auto-redirect when logged in
+                            console.log('Valid session exists, but allowing login page to show (redirect disabled for testing)');
+                            // console.log('Valid session found, redirecting to dashboard');
+                            // hasValidSession = true;
+                            // transitionToPage('dashboard.html');
+                            // return;
+                            
+                            // Clear sessionStorage to prevent confusion
+                            sessionStorage.removeItem('currentUser');
+                            sessionStorage.removeItem('supabaseSession');
+                        } else {
+                            // No valid session - clear any stale session data
+                            console.log('No valid Supabase session, clearing stale data');
+                            sessionStorage.removeItem('currentUser');
+                            sessionStorage.removeItem('supabaseSession');
+                        }
+                    } catch (error) {
+                        console.error('Error checking session:', error);
+                        // Clear stale data on error
+                        sessionStorage.removeItem('currentUser');
+                        sessionStorage.removeItem('supabaseSession');
+                    }
+                } else {
+                    // Supabase not initialized - clear any stale session data
+                    console.log('Supabase not initialized, clearing session data');
+                    sessionStorage.removeItem('currentUser');
+                    sessionStorage.removeItem('supabaseSession');
+                }
+                
+                // No valid session - check if user came from landing page
+                if (!fromLanding && !hasValidSession) {
+                    // User accessed login directly without coming from landing page
+                    // Redirect to landing page first
+                    console.log('No fromLanding flag, redirecting to landing page');
+                    transitionToPage('index.html');
+                    return;
+                }
+            }
+            
+            // Clear the flag after checking
+            sessionStorage.removeItem('fromLanding');
+            
+            // Check for OAuth callback (Google login) - only if URL has OAuth params
+            checkOAuthCallback();
+        });
+        
+        })(); // End IIFE
+    </script>
+</body>
+</html>
+
