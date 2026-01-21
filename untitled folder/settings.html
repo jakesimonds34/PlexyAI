@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlexyAI - Settings</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Initialize Supabase
+        const supabaseUrl = 'https://zjtnptmbyaffsqrikrzi.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqdG5wdG1ieWFmZnNxcmlrcnppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3MzI1OTksImV4cCI6MjA4MzMwODU5OX0.W9ihNjtBJDPmXkxtDS0ZXiE6EVQvh3WgZDq8PYKi15c';
+        let supabaseClient = null;
+
+        function getSupabase() {
+            if (!supabaseClient && window.supabase) {
+                supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+            }
+            return supabaseClient;
+        }
+
+        // Logout function
+        async function logout() {
+            const sb = getSupabase();
+            if (!sb) {
+                console.error('Supabase not initialized');
+                return;
+            }
+
+            try {
+                const { error } = await sb.auth.signOut();
+
+                if (error) {
+                    console.error('Logout error:', error);
+                    alert('Error logging out: ' + error.message);
+                    return;
+                }
+
+                sessionStorage.clear();
+                localStorage.removeItem('rememberedUser');
+                sessionStorage.removeItem('googleAccessToken');
+                sessionStorage.removeItem('googleRefreshToken');
+
+                window.location.href = 'login.html?showLogin=true';
+            } catch (error) {
+                console.error('Logout exception:', error);
+                sessionStorage.clear();
+                localStorage.removeItem('rememberedUser');
+                window.location.href = 'login.html?showLogin=true';
+            }
+        }
+
+        window.logout = logout;
+    </script>
+    <style>
+        @font-face {
+            font-family: "Aeonik-Medium";
+            src: url("https://anima-uploads.s3.amazonaws.com/5c7047e8842a8f000c9e2f06/Aeonik-Medium.ttf") format("truetype");
+        }
+
+        @font-face {
+            font-family: "Satoshi";
+            src: url("https://fonts.cdnfonts.com/css/satoshi") format("woff2");
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --green-primary: #5ad567;
+            --green-light: #e2f6e4;
+            --text-dark: #031504;
+            --text-medium: #3d483e;
+            --text-light: #5b6b5d;
+            --border-color: #d6ded7;
+            --white: #ffffff;
+            --bg-neutral: #fafafa;
+            --error-red: #df1c41;
+        }
+
+        body {
+            font-family: 'Satoshi', 'Inter', Helvetica, sans-serif;
+            background: var(--bg-neutral);
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* TopBar */
+        .topbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 62px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+        }
+
+        .topbar-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 140px;
+        }
+
+        .topbar-logo img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .topbar-logo-text {
+            font-family: 'Aeonik-Medium', Helvetica, sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 300px;
+            height: 32px;
+            padding: 4px 4px 4px 10px;
+            background: #f7fbf7;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .search-icon {
+            width: 14px;
+            height: 14px;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-family: 'Inter', Helvetica, sans-serif;
+            font-size: 12px;
+            color: var(--text-light);
+            outline: none;
+        }
+
+        .search-shortcut {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            height: 24px;
+            padding: 5px 6px;
+            background: white;
+            border-radius: 2px;
+            font-size: 10px;
+            color: var(--text-light);
+        }
+
+        .topbar-divider {
+            width: 1px;
+            height: 20px;
+            background: var(--border-color);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f7fbf7;
+            overflow: hidden;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: black;
+            line-height: 14px;
+        }
+
+        .user-grade {
+            font-size: 11px;
+            color: var(--text-light);
+            line-height: 11px;
+        }
+
+        .chevron-down {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Nav Sidebar */
+        .nav {
+            position: absolute;
+            top: 62px;
+            left: 0;
+            width: 260px;
+            height: calc(100vh - 62px);
+            background: white;
+            border-right: 2px solid var(--border-color);
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .nav-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 0 20px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #f7fbf7;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 100%),
+                        linear-gradient(0deg, var(--green-primary) 0%, var(--green-primary) 100%);
+            border: 4px solid rgba(90, 213, 103, 0.3);
+            box-shadow: 0px 1px 2px rgba(13, 13, 18, 0.06);
+        }
+
+        .nav-item.active .nav-item-text {
+            color: white;
+        }
+
+        .nav-item-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .nav-item-text {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-medium);
+        }
+
+        /* Main Content Frame */
+        .frame {
+            position: absolute;
+            top: 62px;
+            left: 260px;
+            width: calc(100vw - 260px);
+            height: calc(100vh - 62px);
+            background: white;
+            overflow-y: auto;
+        }
+
+        .frame-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .frame-content {
+            position: relative;
+            z-index: 1;
+            padding: 40px;
+            max-width: 800px;
+        }
+
+        /* Settings Header */
+        .settings-header {
+            margin-bottom: 32px;
+        }
+
+        .settings-title {
+            font-family: 'Satoshi', 'Inter', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: #031504;
+            line-height: 32px;
+            margin-bottom: 4px;
+        }
+
+        .settings-subtitle {
+            font-family: 'Satoshi', 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: #5b6b5d;
+            line-height: 20px;
+        }
+
+        /* Settings Cards Container */
+        .settings-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Settings Card */
+        .settings-card {
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .settings-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .settings-card-header:hover {
+            background: #f9fbf9;
+        }
+
+        .settings-card-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--green-light);
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .settings-card-icon svg {
+            width: 20px;
+            height: 20px;
+            color: var(--green-primary);
+        }
+
+        .settings-card-info {
+            flex: 1;
+        }
+
+        .settings-card-title {
+            font-family: 'Satoshi', 'Inter', sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            color: #031504;
+            line-height: 24px;
+        }
+
+        .settings-card-value {
+            font-family: 'Satoshi', 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            color: #5b6b5d;
+            line-height: 20px;
+        }
+
+        .settings-card-chevron {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .settings-card.expanded .settings-card-chevron {
+            transform: rotate(180deg);
+        }
+
+        /* Expanded Content */
+        .settings-card-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .settings-card.expanded .settings-card-content {
+            max-height: 600px;
+        }
+
+        .settings-card-body {
+            padding: 0 20px 20px 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-top: 16px;
+        }
+
+        .form-label {
+            font-family: 'Satoshi', 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: #5b6b5d;
+            line-height: 20px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 8px 16px;
+            border: 0.56px solid #A5A7AB;
+            border-radius: 4px;
+            font-family: 'Satoshi', 'Inter', sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            color: #031504;
+            line-height: 24px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: var(--green-primary);
+        }
+
+        .form-input::placeholder {
+            color: #A5A7AB;
+        }
+
+        /* Save Button */
+        .btn-save {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 100%),
+                        linear-gradient(0deg, var(--green-primary) 0%, var(--green-primary) 100%);
+            border: 2px solid rgba(90, 213, 103, 0.3);
+            border-radius: 4px;
+            box-shadow: 0px 1px 2px rgba(13, 13, 18, 0.06);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0px 4px 12px rgba(90, 213, 103, 0.3);
+        }
+
+        .btn-save:active {
+            transform: translateY(0);
+        }
+
+        .btn-save svg {
+            width: 16px;
+            height: 16px;
+            stroke: #FFFFFF;
+        }
+
+        .btn-save span {
+            font-family: 'Satoshi', 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: #FFFFFF;
+            line-height: 20px;
+        }
+
+        /* Feedback Messages */
+        .feedback-message {
+            margin-top: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .feedback-message.success {
+            color: var(--green-primary);
+        }
+
+        .feedback-message.error {
+            color: var(--error-red);
+        }
+
+        .feedback-message.show {
+            display: block;
+        }
+
+        /* Grade Selection */
+        .grade-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .grade-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .grade-option {
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .grade-button {
+            width: 100%;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Satoshi', 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-dark);
+        }
+
+        .grade-button:hover {
+            border-color: var(--green-primary);
+            background: #f8f9fa;
+        }
+
+        .grade-button.selected {
+            border-color: var(--green-primary);
+            background: var(--green-light);
+        }
+
+        .radio-button {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border-color);
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .grade-button.selected .radio-button {
+            border-color: var(--green-primary);
+            background: var(--green-primary);
+        }
+
+        .grade-button.selected .radio-button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--white);
+        }
+
+        /* Other input field */
+        .other-input-wrapper {
+            margin-top: 12px;
+            display: none;
+        }
+
+        .other-input-wrapper.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- TopBar -->
+    <div class="topbar">
+        <div class="topbar-logo">
+            <img src="https://c.animaapp.com/EEnRA4DR/img/-group-@2x.png" alt="PlexyAI Logo">
+            <div class="topbar-logo-text">PlexyAi</div>
+        </div>
+        <div class="topbar-right">
+            <div class="search-container">
+                <img src="https://c.animaapp.com/EEnRA4DR/img/search-1.svg" alt="Search" class="search-icon">
+                <input type="text" class="search-input" placeholder="Search">
+                <div class="search-shortcut">+K</div>
+            </div>
+            <div class="topbar-divider"></div>
+            <div class="user-profile" id="userProfileDropdown" style="cursor: pointer; position: relative;">
+                <div class="user-avatar">
+                    <img src="https://c.animaapp.com/EEnRA4DR/img/image@2x.png" alt="User">
+                </div>
+                <div class="user-info">
+                    <div class="user-name">Alex Williams</div>
+                    <div class="user-grade">Grade 12</div>
+                </div>
+                <img src="https://c.animaapp.com/EEnRA4DR/img/navbar-company-selector.svg" alt="Dropdown" class="chevron-down">
+                <!-- Dropdown menu -->
+                <div id="userDropdownMenu" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: white; border: 1px solid var(--border-color); border-radius: 4px; box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1); min-width: 150px; z-index: 1000;">
+                    <div style="padding: 8px 12px; cursor: pointer; font-size: 14px; color: var(--text-dark);" onmouseover="this.style.background='#f7fbf7'" onmouseout="this.style.background='white'" onclick="logout()">
+                        Log Out
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nav Sidebar -->
+    <div class="nav">
+        <div class="nav-section">
+            <div class="nav-item" onclick="window.location.href='dashboard.html'">
+                <img src="https://c.animaapp.com/EEnRA4DR/img/element-3.png" alt="Home" class="nav-item-icon">
+                <div class="nav-item-text">Home</div>
+            </div>
+            <div class="nav-item" onclick="window.location.href='chatbot.html'">
+                <img src="https://c.animaapp.com/EEnRA4DR/img/message-chatbot-1.svg" alt="Chatbot" class="nav-item-icon">
+                <div class="nav-item-text">Chatbot</div>
+            </div>
+            <div class="nav-item">
+                <img src="https://c.animaapp.com/EEnRA4DR/img/books-1.svg" alt="Study" class="nav-item-icon">
+                <div class="nav-item-text">Study</div>
+            </div>
+            <div class="nav-item active">
+                <img src="https://c.animaapp.com/EEnRA4DR/img/setting-2.png" alt="Settings" class="nav-item-icon" style="filter: brightness(0) invert(1);">
+                <div class="nav-item-text">Settings</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Frame -->
+    <div class="frame">
+        <img src="https://c.animaapp.com/EEnRA4DR/img/background.svg" alt="Background" class="frame-background">
+        <div class="frame-content">
+            <!-- Settings Header -->
+            <div class="settings-header">
+                <h1 class="settings-title">Profile & Settings</h1>
+                <p class="settings-subtitle">Manage your account information</p>
+            </div>
+
+            <!-- Settings Cards -->
+            <div class="settings-cards">
+                <!-- Email Address Card -->
+                <div class="settings-card" id="emailCard">
+                    <div class="settings-card-header" onclick="toggleCard('emailCard')">
+                        <div class="settings-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                <polyline points="22,6 12,13 2,6"/>
+                            </svg>
+                        </div>
+                        <div class="settings-card-info">
+                            <div class="settings-card-title">Email Address</div>
+                            <div class="settings-card-value" id="currentEmail">Loading...</div>
+                        </div>
+                        <svg class="settings-card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="settings-card-content">
+                        <div class="settings-card-body">
+                            <div class="form-group">
+                                <label class="form-label">New Email</label>
+                                <input type="email" class="form-input" id="newEmail" placeholder="Enter new email address">
+                            </div>
+                            <button class="btn-save" onclick="updateEmail()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                                    <polyline points="17 21 17 13 7 13 7 21"/>
+                                    <polyline points="7 3 7 8 15 8"/>
+                                </svg>
+                                <span>Save Changes</span>
+                            </button>
+                            <div class="feedback-message" id="emailFeedback"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Password Card -->
+                <div class="settings-card" id="passwordCard">
+                    <div class="settings-card-header" onclick="toggleCard('passwordCard')">
+                        <div class="settings-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                        </div>
+                        <div class="settings-card-info">
+                            <div class="settings-card-title">Password</div>
+                            <div class="settings-card-value">Change your password</div>
+                        </div>
+                        <svg class="settings-card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="settings-card-content">
+                        <div class="settings-card-body">
+                            <div class="form-group">
+                                <label class="form-label">New Password</label>
+                                <input type="password" class="form-input" id="newPassword" placeholder="Enter new password">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Confirm Password</label>
+                                <input type="password" class="form-input" id="confirmPassword" placeholder="Confirm new password">
+                            </div>
+                            <button class="btn-save" onclick="updatePassword()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                                    <polyline points="17 21 17 13 7 13 7 21"/>
+                                    <polyline points="7 3 7 8 15 8"/>
+                                </svg>
+                                <span>Save Changes</span>
+                            </button>
+                            <div class="feedback-message" id="passwordFeedback"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grade Level Card -->
+                <div class="settings-card" id="gradeCard">
+                    <div class="settings-card-header" onclick="toggleCard('gradeCard')">
+                        <div class="settings-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                            </svg>
+                        </div>
+                        <div class="settings-card-info">
+                            <div class="settings-card-title">Grade Level</div>
+                            <div class="settings-card-value" id="currentGrade">Loading...</div>
+                        </div>
+                        <svg class="settings-card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="settings-card-content">
+                        <div class="settings-card-body">
+                            <div class="grade-options">
+                                <!-- Row 1 -->
+                                <div class="grade-row">
+                                    <div class="grade-option">
+                                        <button type="button" class="grade-button" data-grade="6th Grade" onclick="selectGrade('6th Grade', this)">
+                                            <span>6th Grade</span>
+                                            <div class="radio-button"></div>
+                                        </button>
+                                    </div>
+                                    <div class="grade-option">
+                                        <button type="button" class="grade-button" data-grade="7th Grade" onclick="selectGrade('7th Grade', this)">
+                                            <span>7th Grade</span>
+                                            <div class="radio-button"></div>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Row 2 -->
+                                <div class="grade-row">
+                                    <div class="grade-option">
+                                        <button type="button" class="grade-button" data-grade="8th Grade" onclick="selectGrade('8th Grade', this)">
+                                            <span>8th Grade</span>
+                                            <div class="radio-button"></div>
+                                        </button>
+                                    </div>
+                                    <div class="grade-option">
+                                        <button type="button" class="grade-button" data-grade="9th Grade" onclick="selectGrade('9th Grade', this)">
+                                            <span>9th Grade</span>
+                                            <div class="radio-button"></div>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Row 3 -->
+                                <div class="grade-row">
+                                    <div class="grade-option">
+                                        <button type="button" class="grade-button" data-grade="10th Grade" onclick="selectGrade('10th Grade', this)">
+                                            <span>10th Grade</span>
+                                            <div class="radio-button"></div>
+                                        </button>
+                                    </div>
+                                    <div class="grade-option">
+                                        <button type="button" class="grade-button" data-grade="11th Grade" onclick="selectGrade('11th Grade', this)">
+                                            <span>11th Grade</span>
+                                            <div class="radio-button"></div>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Row 4 -->
+                                <div class="grade-row">
+                                    <div class="grade-option">
+                                        <button type="button" class="grade-button" data-grade="12th Grade" onclick="selectGrade('12th Grade', this)">
+                                            <span>12th Grade</span>
+                                            <div class="radio-button"></div>
+                                        </button>
+                                    </div>
+                                    <div class="grade-option">
+                                        <button type="button" class="grade-button" data-grade="College" onclick="selectGrade('College', this)">
+                                            <span>College</span>
+                                            <div class="radio-button"></div>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Row 5 - Other -->
+                                <div class="grade-row">
+                                    <div class="grade-option">
+                                        <button type="button" class="grade-button" data-grade="other" onclick="selectGrade('other', this)">
+                                            <span>Other</span>
+                                            <div class="radio-button"></div>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Other input -->
+                                <div class="other-input-wrapper" id="otherInputWrapper">
+                                    <input type="text" class="form-input" id="otherGradeInput" placeholder="Please specify your grade/level">
+                                </div>
+                            </div>
+                            <button class="btn-save" onclick="updateGrade()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                                    <polyline points="17 21 17 13 7 13 7 21"/>
+                                    <polyline points="7 3 7 8 15 8"/>
+                                </svg>
+                                <span>Save Changes</span>
+                            </button>
+                            <div class="feedback-message" id="gradeFeedback"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedGrade = null;
+        let currentUserData = null;
+
+        // Setup user profile dropdown
+        function setupUserDropdown() {
+            const userProfile = document.getElementById('userProfileDropdown');
+            const dropdownMenu = document.getElementById('userDropdownMenu');
+
+            if (userProfile && dropdownMenu) {
+                userProfile.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdownMenu.style.display = dropdownMenu.style.display === 'none' ? 'block' : 'none';
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (!userProfile.contains(e.target)) {
+                        dropdownMenu.style.display = 'none';
+                    }
+                });
+            }
+        }
+
+        // Toggle card expansion (accordion behavior)
+        function toggleCard(cardId) {
+            const cards = document.querySelectorAll('.settings-card');
+            const targetCard = document.getElementById(cardId);
+
+            cards.forEach(card => {
+                if (card.id === cardId) {
+                    card.classList.toggle('expanded');
+                } else {
+                    card.classList.remove('expanded');
+                }
+            });
+        }
+
+        // Select grade
+        function selectGrade(grade, button) {
+            document.querySelectorAll('.grade-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+
+            button.classList.add('selected');
+            selectedGrade = grade;
+
+            const otherWrapper = document.getElementById('otherInputWrapper');
+            if (grade === 'other') {
+                otherWrapper.classList.add('show');
+                document.getElementById('otherGradeInput').focus();
+            } else {
+                otherWrapper.classList.remove('show');
+                document.getElementById('otherGradeInput').value = '';
+            }
+        }
+
+        // Show feedback message
+        function showFeedback(elementId, message, isSuccess) {
+            const feedback = document.getElementById(elementId);
+            feedback.textContent = message;
+            feedback.className = 'feedback-message show ' + (isSuccess ? 'success' : 'error');
+
+            setTimeout(() => {
+                feedback.classList.remove('show');
+            }, 3000);
+        }
+
+        // Validate email format
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        // Update email
+        async function updateEmail() {
+            const newEmail = document.getElementById('newEmail').value.trim();
+
+            if (!newEmail) {
+                showFeedback('emailFeedback', 'Please enter an email address', false);
+                return;
+            }
+
+            if (!validateEmail(newEmail)) {
+                showFeedback('emailFeedback', 'Please enter a valid email address', false);
+                return;
+            }
+
+            try {
+                const sb = getSupabase();
+                const { error } = await sb.auth.updateUser({ email: newEmail });
+
+                if (error) {
+                    showFeedback('emailFeedback', error.message, false);
+                } else {
+                    showFeedback('emailFeedback', 'Email update initiated. Please check your new email to confirm.', true);
+                    document.getElementById('newEmail').value = '';
+                }
+            } catch (err) {
+                showFeedback('emailFeedback', 'An error occurred. Please try again.', false);
+            }
+        }
+
+        // Update password
+        async function updatePassword() {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (!newPassword) {
+                showFeedback('passwordFeedback', 'Please enter a new password', false);
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                showFeedback('passwordFeedback', 'Password must be at least 6 characters', false);
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showFeedback('passwordFeedback', 'Passwords do not match', false);
+                return;
+            }
+
+            try {
+                const sb = getSupabase();
+                const { error } = await sb.auth.updateUser({ password: newPassword });
+
+                if (error) {
+                    showFeedback('passwordFeedback', error.message, false);
+                } else {
+                    showFeedback('passwordFeedback', 'Password updated successfully', true);
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                }
+            } catch (err) {
+                showFeedback('passwordFeedback', 'An error occurred. Please try again.', false);
+            }
+        }
+
+        // Update grade
+        async function updateGrade() {
+            let grade = selectedGrade;
+
+            if (grade === 'other') {
+                grade = document.getElementById('otherGradeInput').value.trim();
+                if (!grade || grade.length < 2) {
+                    showFeedback('gradeFeedback', 'Please enter a valid grade/level', false);
+                    return;
+                }
+            }
+
+            if (!grade) {
+                showFeedback('gradeFeedback', 'Please select a grade level', false);
+                return;
+            }
+
+            try {
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+                if (!currentUser || !currentUser.id) {
+                    showFeedback('gradeFeedback', 'User session not found', false);
+                    return;
+                }
+
+                const sb = getSupabase();
+                const { error } = await sb
+                    .from('profiles')
+                    .update({ grade: grade })
+                    .eq('id', currentUser.id);
+
+                if (error) {
+                    showFeedback('gradeFeedback', error.message, false);
+                } else {
+                    showFeedback('gradeFeedback', 'Grade level updated successfully', true);
+                    document.getElementById('currentGrade').textContent = grade;
+                    // Update topbar grade display
+                    const userGradeEl = document.querySelector('.user-grade');
+                    if (userGradeEl) {
+                        userGradeEl.textContent = grade.includes('Grade') ? grade : `Grade ${grade}`;
+                    }
+                }
+            } catch (err) {
+                showFeedback('gradeFeedback', 'An error occurred. Please try again.', false);
+            }
+        }
+
+        // Load user data
+        async function loadUserData() {
+            try {
+                const sb = getSupabase();
+                if (!sb) {
+                    console.error('Supabase not initialized');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const { data: { session } } = await sb.auth.getSession();
+
+                if (!session) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Set current email
+                document.getElementById('currentEmail').textContent = session.user.email;
+                document.getElementById('newEmail').value = session.user.email;
+
+                // Get user profile
+                const currentUserStr = sessionStorage.getItem('currentUser');
+                if (currentUserStr) {
+                    const currentUser = JSON.parse(currentUserStr);
+
+                    // Update topbar user info
+                    const userNameEl = document.querySelector('.user-name');
+                    if (userNameEl && currentUser.name) {
+                        userNameEl.textContent = currentUser.name;
+                    }
+
+                    // Fetch profile from Supabase
+                    const { data: profile } = await sb
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', currentUser.id)
+                        .single();
+
+                    if (profile) {
+                        currentUserData = profile;
+
+                        // Update grade display
+                        if (profile.grade) {
+                            document.getElementById('currentGrade').textContent = profile.grade;
+                            const userGradeEl = document.querySelector('.user-grade');
+                            if (userGradeEl) {
+                                userGradeEl.textContent = profile.grade.includes('Grade') ? profile.grade : `Grade ${profile.grade}`;
+                            }
+
+                            // Pre-select current grade in grade selector
+                            const gradeButtons = document.querySelectorAll('.grade-button');
+                            gradeButtons.forEach(btn => {
+                                if (btn.dataset.grade === profile.grade) {
+                                    btn.classList.add('selected');
+                                    selectedGrade = profile.grade;
+                                }
+                            });
+                        } else {
+                            document.getElementById('currentGrade').textContent = 'Not set';
+                        }
+
+                        // Update name display
+                        if (profile.full_name) {
+                            const userNameEl = document.querySelector('.user-name');
+                            if (userNameEl) {
+                                userNameEl.textContent = profile.full_name;
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Initialize page
+        window.addEventListener('DOMContentLoaded', async function() {
+            setupUserDropdown();
+            await loadUserData();
+        });
+    </script>
+</body>
+</html>
